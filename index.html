@@ -77,6 +77,8 @@
             <div class="flex items-center space-x-2">
                 <i class="fa-solid fa-list text-orange-500 text-lg"></i>
                 <h1 class="text-sm font-bold tracking-tight text-white uppercase" id="app-flow-title">Item Wise Bill</h1>
+                <!-- Cache Buster visual reference tag to guarantee we are loading the latest deployed script version -->
+                <span class="text-[9px] bg-orange-600/20 text-orange-400 px-1.5 py-0.5 rounded ml-2 font-mono uppercase tracking-widest hidden sm:inline-block">v2.5 - Live Sync</span>
             </div>
             
             <div class="flex items-center space-x-2">
@@ -593,6 +595,17 @@
 
         // Initialize App states
         function initApp() {
+            // FORCE HARD-RESET DIAGNOSTIC TO OVERRIDE CORRUPT OR OUTDATED SCHEMA CACHE ON GITHUB PAGES
+            const cacheBusterVersion = "chill_out_ver_2_5_stable";
+            const installedVersion = localStorage.getItem("chill_out_active_ver");
+            
+            if (installedVersion !== cacheBusterVersion) {
+                // Wipe previous legacy arrays to enforce preloading the complete updated PDF menu catalog
+                localStorage.removeItem("chill_out_categories");
+                localStorage.removeItem("chill_out_products");
+                localStorage.setItem("chill_out_active_ver", cacheBusterVersion);
+            }
+
             categories = safeGetItem("chill_out_categories", defaultCategories);
             products = safeGetItem("chill_out_products", defaultProducts);
             transactions = safeGetItem("chill_out_transactions", []);
