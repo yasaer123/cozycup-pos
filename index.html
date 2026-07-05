@@ -360,11 +360,6 @@
                         <h4 id="category-form-title" class="text-xs font-black text-white uppercase tracking-wider mb-2">New Category Form</h4>
                         <input type="hidden" id="form-category-id">
                         <div>
-                            <label class="block text-[10px] font-black text-neutral-400 uppercase mb-1">Unique Identifier ID *</label>
-                            <input type="text" id="form-category-slug" required placeholder="e.g. coffee-shakes" 
-                                   class="w-full bg-[#121212] border border-neutral-700 rounded px-3 py-2 text-white placeholder-neutral-600 focus:outline-none focus:border-orange-500 font-bold">
-                        </div>
-                        <div>
                             <label class="block text-[10px] font-black text-neutral-400 uppercase mb-1">Display Title *</label>
                             <input type="text" id="form-category-name" required placeholder="e.g. COFFEE & SHAKES" 
                                    class="w-full bg-[#121212] border border-neutral-700 rounded px-3 py-2 text-white placeholder-neutral-600 focus:outline-none focus:border-orange-500 font-bold uppercase">
@@ -375,12 +370,12 @@
                         </div>
                     </form>
                     <div class="text-[10px] text-neutral-500 mt-4 leading-relaxed bg-[#111] p-2 rounded">
-                        * Deleting a category will untag assigned products but won't delete the food items themselves.
+                        * Deleting a category will untag assigned products. Use Up (<i class="fa-solid fa-arrow-up"></i>) / Down (<i class="fa-solid fa-arrow-down"></i>) arrows on the right list to sort category filters.
                     </div>
                 </div>
                 <!-- Right Hand Side Scrollable Lists -->
                 <div class="flex-1 flex flex-col p-4 min-h-0 bg-[#121212]">
-                    <h4 class="text-xs font-black text-white uppercase tracking-wide mb-2 shrink-0">Existing Categories</h4>
+                    <h4 class="text-xs font-black text-white uppercase tracking-wide mb-2 shrink-0">Existing Categories (Custom Sorting)</h4>
                     <div class="flex-1 overflow-y-auto divide-y divide-neutral-800 border border-neutral-800 rounded bg-[#161616]" id="catalog-categories-list">
                         <!-- Loaded dynamically -->
                     </div>
@@ -1016,10 +1011,10 @@
                             <div class="text-[10px] text-[#f39c12] font-semibold mt-0.5 uppercase tracking-wide">₹${prod.price} • ${catName}</div>
                         </div>
                         <div class="flex space-x-1 shrink-0">
-                            <button onclick="editProductInCatalog('${prod.id}')" class="px-2.5 py-1.5 rounded bg-amber-500/15 text-amber-500 hover:bg-amber-500 hover:text-white transition-all text-[10px] font-bold uppercase">
+                            <button onclick="editProductInCatalog('${prod.id}')" class="px-2.5 py-1.5 rounded bg-amber-500/15 text-amber-500 hover:bg-amber-500 hover:text-white transition-all text-[10px] font-bold uppercase" title="Edit Product">
                                 <i class="fa-solid fa-pencil"></i>
                             </button>
-                            <button onclick="deleteProductInCatalog('${prod.id}')" class="px-2.5 py-1.5 rounded bg-red-600/15 text-red-500 hover:bg-red-600 hover:text-white transition-all text-[10px] font-bold uppercase">
+                            <button onclick="deleteProductInCatalog('${prod.id}')" class="px-2.5 py-1.5 rounded bg-red-600/15 text-red-500 hover:bg-red-600 hover:text-white transition-all text-[10px] font-bold uppercase" title="Delete Product">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
@@ -1116,7 +1111,7 @@
             document.getElementById('product-form-submit-btn').textContent = "Save Item";
         }
 
-        // RENDER CATEGORIES IN CATALOG MANAGER
+        // RENDER CATEGORIES IN CATALOG MANAGER (WITH UP/DOWN SORTING CONTROLS)
         function renderCatalogManagerCategories() {
             const list = document.getElementById('catalog-categories-list');
             if (!list) return;
@@ -1126,20 +1121,30 @@
                 return;
             }
 
-            list.innerHTML = categories.map(cat => {
+            list.innerHTML = categories.map((cat, idx) => {
                 // Count products inside this category
                 const count = products.filter(p => p.category === cat.id).length;
                 return `
                     <div class="flex justify-between items-center px-3 py-2 text-white hover:bg-neutral-800 transition-all">
                         <div class="min-w-0 pr-2">
                             <div class="font-black uppercase truncate text-sm">${cat.name}</div>
-                            <div class="text-[10px] text-neutral-400 font-medium mt-0.5 uppercase tracking-wide">ID Slug: ${cat.id} • ${count} food items</div>
+                            <div class="text-[10px] text-neutral-400 font-medium mt-0.5 uppercase tracking-wide">Sort Index: ${idx + 1} • ${count} food items</div>
                         </div>
-                        <div class="flex space-x-1 shrink-0">
-                            <button onclick="editCategoryInCatalog('${cat.id}')" class="px-2.5 py-1.5 rounded bg-amber-500/15 text-amber-500 hover:bg-amber-500 hover:text-white transition-all text-[10px] font-bold uppercase">
+                        <div class="flex items-center space-x-1.5 shrink-0">
+                            <!-- Move Up Arrow -->
+                            <button onclick="moveCategoryUp('${cat.id}')" class="px-2 py-1.5 rounded bg-neutral-800 text-neutral-300 hover:bg-neutral-700 transition-all text-xs" title="Move Category Up">
+                                <i class="fa-solid fa-arrow-up"></i>
+                            </button>
+                            <!-- Move Down Arrow -->
+                            <button onclick="moveCategoryDown('${cat.id}')" class="px-2 py-1.5 rounded bg-neutral-800 text-neutral-300 hover:bg-neutral-700 transition-all text-xs" title="Move Category Down">
+                                <i class="fa-solid fa-arrow-down"></i>
+                            </button>
+                            <!-- Edit Button -->
+                            <button onclick="editCategoryInCatalog('${cat.id}')" class="px-2.5 py-1.5 rounded bg-amber-500/15 text-amber-500 hover:bg-amber-500 hover:text-white transition-all text-[10px] font-bold uppercase" title="Rename Category">
                                 <i class="fa-solid fa-pencil"></i>
                             </button>
-                            <button onclick="deleteCategoryInCatalog('${cat.id}')" class="px-2.5 py-1.5 rounded bg-red-600/15 text-red-500 hover:bg-red-600 hover:text-white transition-all text-[10px] font-bold uppercase">
+                            <!-- Delete Button -->
+                            <button onclick="deleteCategoryInCatalog('${cat.id}')" class="px-2.5 py-1.5 rounded bg-red-600/15 text-red-500 hover:bg-red-600 hover:text-white transition-all text-[10px] font-bold uppercase" title="Delete Category">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
@@ -1148,13 +1153,47 @@
             }).join('');
         }
 
+        // SWAP ORDERING HANDLERS
+        function moveCategoryUp(id) {
+            const idx = categories.findIndex(c => c.id === id);
+            if (idx > 0) {
+                // Swap array elements
+                const temp = categories[idx];
+                categories[idx] = categories[idx - 1];
+                categories[idx - 1] = temp;
+
+                // Sync and re-render
+                safeSetItem("chill_categories", categories);
+                renderCatalogManagerCategories();
+                renderCategoryFilters();
+                renderPOSCatalog();
+                populateCategoryDropdowns();
+            }
+        }
+
+        function moveCategoryDown(id) {
+            const idx = categories.findIndex(c => c.id === id);
+            if (idx > -1 && idx < categories.length - 1) {
+                // Swap array elements
+                const temp = categories[idx];
+                categories[idx] = categories[idx + 1];
+                categories[idx + 1] = temp;
+
+                // Sync and re-render
+                safeSetItem("chill_categories", categories);
+                renderCatalogManagerCategories();
+                renderCategoryFilters();
+                renderPOSCatalog();
+                populateCategoryDropdowns();
+            }
+        }
+
         // SAVE / UPDATE CATEGORIES LOGIC
         function handleCategorySubmit(e) {
             e.preventDefault();
-            const catSlug = document.getElementById('form-category-slug').value.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '');
             const catName = document.getElementById('form-category-name').value.trim().toUpperCase();
 
-            if (!catSlug || !catName) return;
+            if (!catName) return;
 
             if (activeEditingCategoryId) {
                 // UPDATE OPERATION
@@ -1165,16 +1204,11 @@
                 activeEditingCategoryId = null;
                 showCustomAlert("Category Updated", `Display title updated to ${catName}.`);
             } else {
-                // CREATE OPERATION
-                // Check if slug or name exists
-                const existingSlugIdx = categories.findIndex(c => c.id === catSlug);
-                if (existingSlugIdx > -1) {
-                    showCustomAlert("Slug Collision", `ID slug '${catSlug}' is already assigned. Please choose another.`);
-                    return;
-                }
-
+                // CREATE OPERATION (Auto Slug ID generation resolves field issues)
+                const generatedSlug = "cat-" + catName.toLowerCase().replace(/[^a-z0-9]/g, '-') + "-" + Date.now().toString().slice(-4);
+                
                 const newCategory = {
-                    id: catSlug,
+                    id: generatedSlug,
                     name: catName
                 };
                 categories.push(newCategory);
@@ -1195,8 +1229,6 @@
 
             activeEditingCategoryId = cat.id;
             document.getElementById('form-category-id').value = cat.id;
-            document.getElementById('form-category-slug').value = cat.id;
-            document.getElementById('form-category-slug').disabled = true; // Block slug ID editing
             document.getElementById('form-category-name').value = cat.name;
 
             document.getElementById('category-form-title').textContent = "Modify Category";
@@ -1230,8 +1262,6 @@
         function resetCategoryForm() {
             activeEditingCategoryId = null;
             document.getElementById('form-category-id').value = '';
-            document.getElementById('form-category-slug').value = '';
-            document.getElementById('form-category-slug').disabled = false;
             document.getElementById('form-category-name').value = '';
             document.getElementById('category-form-title').textContent = "New Category Form";
             document.getElementById('category-form-submit-btn').textContent = "Save Category";
