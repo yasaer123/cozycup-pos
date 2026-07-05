@@ -142,7 +142,7 @@
                     <button onclick="clearCart()" class="bg-[#e74c3c] hover:bg-red-600 text-white font-extrabold text-xs py-2.5 rounded text-center transition-all">
                         Clear
                     </button>
-                    <button onclick="openAddProductModal()" class="col-span-2 bg-[#f39c12] hover:bg-orange-500 text-white font-extrabold text-xs py-2.5 rounded text-center transition-all">
+                    <button onclick="openCatalogManager()" class="col-span-2 bg-[#f39c12] hover:bg-orange-500 text-white font-extrabold text-xs py-2.5 rounded text-center transition-all">
                         Add Product
                     </button>
                     <button onclick="processCheckout(true)" class="bg-[#95a5a6] hover:bg-neutral-500 text-white font-extrabold text-xs py-2.5 rounded text-center transition-all">
@@ -170,7 +170,8 @@
             </div>
 
             <!-- LOWER HALF/LEFT COLUMN: DENSE PRODUCTS CATALOG -->
-            <div class="flex-1 flex flex-col min-h-0 bg-[#121212] pl-4 md:pl-6 py-2">
+            <!-- Fixed horizontal clipping: Added min-w-0 and overflow-hidden to allow absolute resizing -->
+            <div class="flex-1 min-w-0 flex flex-col min-h-0 bg-[#121212] pl-4 md:pl-6 py-2 overflow-hidden">
                 <!-- Horizontal Category Filter Slider -->
                 <div class="bg-[#1a1a1a] border-b border-neutral-850 px-2 py-1.5 flex items-center space-x-1.5 overflow-x-auto no-scrollbar shrink-0" id="pos-category-filters">
                     <!-- Loaded programmatically -->
@@ -261,6 +262,8 @@
 
     </main>
 
+    <!-- ==================== DIALOGS & MANAGERS ==================== -->
+
     <!-- Inline Cart Edit Price/Quantity Modal -->
     <div id="cart-item-edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="fixed inset-0 bg-black/85" onclick="closeCartItemEditModal()"></div>
@@ -289,41 +292,107 @@
         </div>
     </div>
 
-    <!-- Add/Edit Product Modal Dialog -->
-    <div id="product-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/85" onclick="closeProductModal()"></div>
-        <div class="bg-[#1a1a1a] border border-neutral-800 rounded-lg max-w-sm w-full p-5 relative z-10 text-xs">
-            <h3 id="product-modal-title" class="text-sm font-bold text-white uppercase tracking-wider mb-3">Add Product Form</h3>
-            <form onsubmit="handleProductFormSubmit(event)" class="space-y-3">
-                <input type="hidden" id="edit-prod-id">
-                <div>
-                    <label class="block text-[10px] font-black text-neutral-400 uppercase mb-1">Item Title *</label>
-                    <input type="text" id="form-prod-name" required placeholder="e.g. Lime Soda" 
-                           class="w-full bg-[#121212] border border-neutral-700 rounded px-3 py-2 text-white placeholder-neutral-600 focus:outline-none focus:border-orange-500 font-bold">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[10px] font-black text-neutral-400 uppercase mb-1">Category *</label>
-                        <select id="form-prod-category" required 
-                                class="w-full bg-[#121212] border border-neutral-700 rounded px-3 py-2 text-white focus:outline-none focus:border-orange-500">
-                            <!-- Loaded programmatically -->
-                        </select>
+    <!-- COMPREHENSIVE DUAL-TAB CATALOG MANAGER MODAL -->
+    <div id="catalog-manager-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/85" onclick="closeCatalogManager()"></div>
+        <div class="bg-[#161616] border border-neutral-800 rounded-lg max-w-2xl w-full h-[85vh] flex flex-col relative z-10 text-xs text-neutral-200">
+            
+            <!-- Tab Selection Headers -->
+            <div class="flex border-b border-neutral-800 shrink-0">
+                <button onclick="switchCatalogTab('products')" id="tab-btn-products" class="flex-1 py-3 text-center font-black text-xs uppercase tracking-wider border-r border-neutral-800 transition-all bg-[#1a1a1a] text-[#f39c12] border-b-2 border-b-[#f39c12]">
+                    <i class="fa-solid fa-mug-hot mr-2"></i>Manage Products
+                </button>
+                <button onclick="switchCatalogTab('categories')" id="tab-btn-categories" class="flex-1 py-3 text-center font-black text-xs uppercase tracking-wider transition-all hover:bg-neutral-850">
+                    <i class="fa-solid fa-tags mr-2"></i>Manage Categories
+                </button>
+            </div>
+
+            <!-- TAB 1 CONTENT: PRODUCTS OPERATIONS -->
+            <div id="catalog-pane-products" class="flex-1 flex flex-col md:flex-row min-h-0">
+                <!-- Left Hand Side Add/Edit Form -->
+                <div class="w-full md:w-[45%] p-4 border-b md:border-b-0 md:border-r border-neutral-800 flex flex-col justify-between overflow-y-auto shrink-0">
+                    <form onsubmit="handleProductSubmit(event)" class="space-y-3">
+                        <h4 id="product-form-title" class="text-xs font-black text-white uppercase tracking-wider mb-2">New Product Form</h4>
+                        <input type="hidden" id="form-product-id">
+                        <div>
+                            <label class="block text-[10px] font-black text-neutral-400 uppercase mb-1">Item Title *</label>
+                            <input type="text" id="form-product-name" required placeholder="e.g. LIME SODA" 
+                                   class="w-full bg-[#121212] border border-neutral-700 rounded px-3 py-2 text-white placeholder-neutral-600 focus:outline-none focus:border-orange-500 font-bold uppercase">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-neutral-400 uppercase mb-1">Category *</label>
+                            <select id="form-product-category" required class="w-full bg-[#121212] border border-neutral-700 rounded px-3 py-2 text-white focus:outline-none focus:border-orange-500 font-bold uppercase">
+                                <!-- Loaded dynamically -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-neutral-400 uppercase mb-1">Rate (₹) *</label>
+                            <input type="number" id="form-product-price" required step="1" min="0" placeholder="0" 
+                                   class="w-full bg-[#121212] border border-neutral-700 rounded px-3 py-2 text-white placeholder-neutral-600 focus:outline-none focus:border-orange-500 font-bold">
+                        </div>
+                        <div class="pt-3 flex space-x-2">
+                            <button type="button" onclick="resetProductForm()" class="flex-1 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-bold py-2 rounded">Clear Form</button>
+                            <button type="submit" id="product-form-submit-btn" class="flex-1 bg-[#f39c12] hover:bg-orange-500 text-white font-bold py-2 rounded">Save Item</button>
+                        </div>
+                    </form>
+                    <div class="text-[10px] text-neutral-500 mt-4 leading-relaxed bg-[#111] p-2 rounded">
+                        * Inputting an existing item title will override details. Added items automatically populate selection grid.
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-neutral-400 uppercase mb-1">Rate (INR) *</label>
-                        <input type="number" id="form-prod-price" required step="0.01" min="0" placeholder="0" 
-                               class="w-full bg-[#121212] border border-neutral-700 rounded px-3 py-2 text-white placeholder-neutral-600 focus:outline-none focus:border-orange-500 font-bold">
+                </div>
+                <!-- Right Hand Side Scrollable Lists -->
+                <div class="flex-1 flex flex-col p-4 min-h-0 bg-[#121212]">
+                    <div class="flex justify-between items-center mb-2 shrink-0">
+                        <h4 class="text-xs font-black text-white uppercase tracking-wide">Existing Catalog Logs</h4>
+                        <input type="text" id="catalog-product-search" oninput="renderCatalogManagerProducts()" placeholder="Quick filter..." 
+                               class="bg-neutral-900 border border-neutral-700 rounded px-2.5 py-1 text-[11px] text-white focus:outline-none focus:border-orange-500">
+                    </div>
+                    <div class="flex-1 overflow-y-auto divide-y divide-neutral-800 border border-neutral-800 rounded bg-[#161616]" id="catalog-products-list">
+                        <!-- Loaded dynamically -->
                     </div>
                 </div>
-                <div class="pt-2 flex space-x-2">
-                    <button type="button" onclick="closeProductModal()" class="flex-1 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-bold py-2 rounded">
-                        Cancel
-                    </button>
-                    <button type="submit" class="flex-1 bg-[#f39c12] hover:bg-orange-500 text-white font-bold py-2 rounded">
-                        Save Item
-                    </button>
+            </div>
+
+            <!-- TAB 2 CONTENT: CATEGORIES OPERATIONS -->
+            <div id="catalog-pane-categories" class="flex-1 flex flex-col md:flex-row min-h-0 hidden">
+                <!-- Left Hand Side Add/Edit Form -->
+                <div class="w-full md:w-[45%] p-4 border-b md:border-b-0 md:border-r border-neutral-800 flex flex-col justify-between shrink-0">
+                    <form onsubmit="handleCategorySubmit(event)" class="space-y-3">
+                        <h4 id="category-form-title" class="text-xs font-black text-white uppercase tracking-wider mb-2">New Category Form</h4>
+                        <input type="hidden" id="form-category-id">
+                        <div>
+                            <label class="block text-[10px] font-black text-neutral-400 uppercase mb-1">Unique Identifier ID *</label>
+                            <input type="text" id="form-category-slug" required placeholder="e.g. coffee-shakes" 
+                                   class="w-full bg-[#121212] border border-neutral-700 rounded px-3 py-2 text-white placeholder-neutral-600 focus:outline-none focus:border-orange-500 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-neutral-400 uppercase mb-1">Display Title *</label>
+                            <input type="text" id="form-category-name" required placeholder="e.g. COFFEE & SHAKES" 
+                                   class="w-full bg-[#121212] border border-neutral-700 rounded px-3 py-2 text-white placeholder-neutral-600 focus:outline-none focus:border-orange-500 font-bold uppercase">
+                        </div>
+                        <div class="pt-3 flex space-x-2">
+                            <button type="button" onclick="resetCategoryForm()" class="flex-1 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-bold py-2 rounded">Clear Form</button>
+                            <button type="submit" id="category-form-submit-btn" class="flex-1 bg-[#f39c12] hover:bg-orange-500 text-white font-bold py-2 rounded">Save Category</button>
+                        </div>
+                    </form>
+                    <div class="text-[10px] text-neutral-500 mt-4 leading-relaxed bg-[#111] p-2 rounded">
+                        * Deleting a category will untag assigned products but won't delete the food items themselves.
+                    </div>
                 </div>
-            </form>
+                <!-- Right Hand Side Scrollable Lists -->
+                <div class="flex-1 flex flex-col p-4 min-h-0 bg-[#121212]">
+                    <h4 class="text-xs font-black text-white uppercase tracking-wide mb-2 shrink-0">Existing Categories</h4>
+                    <div class="flex-1 overflow-y-auto divide-y divide-neutral-800 border border-neutral-800 rounded bg-[#161616]" id="catalog-categories-list">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Closing controls -->
+            <div class="bg-[#1a1a1a] border-t border-neutral-800 px-4 py-3 flex justify-end shrink-0">
+                <button onclick="closeCatalogManager()" class="px-5 py-2 bg-[#333] hover:bg-neutral-700 text-white font-black text-[11px] uppercase tracking-wide rounded">
+                    Done / Close Menu
+                </button>
+            </div>
         </div>
     </div>
 
@@ -545,6 +614,11 @@
         let transactions = [];
         let currentEditingOrderIndex = null; // Keeps track of edited transaction logs to avoid duplicates
 
+        // Dynamic Dialog Form States
+        let catalogManagerActiveTab = "products";
+        let activeEditingProductId = null;
+        let activeEditingCategoryId = null;
+
         // Safe storage drivers wrapping local storage calls
         function safeGetItem(key) {
             try {
@@ -663,10 +737,15 @@
                 safeSetItem("chill_transactions", transactions);
             }
 
-            // Ensure categories selectors are seeded inside modals
-            const categorySelect = document.getElementById('form-prod-category');
-            if (categorySelect) {
-                categorySelect.innerHTML = categories.map(cat => 
+            // Populate category select options inside Catalog forms
+            populateCategoryDropdowns();
+        }
+
+        // Keep dropdown select menus matching category states
+        function populateCategoryDropdowns() {
+            const selectDropdown = document.getElementById('form-product-category');
+            if (selectDropdown) {
+                selectDropdown.innerHTML = categories.map(cat => 
                     `<option value="${cat.id}">${cat.name}</option>`
                 ).join('');
             }
@@ -877,41 +956,288 @@
             });
         }
 
-        // Manual open "Add Product" configuration form modal
-        function openAddProductModal() {
-            document.getElementById('edit-prod-id').value = '';
-            document.getElementById('form-prod-name').value = '';
-            document.getElementById('form-prod-price').value = '';
-            document.getElementById('product-modal-title').textContent = "Add Product Form";
-            document.getElementById('product-modal').classList.remove('hidden');
+        // ==================== CATALOG MANAGER FUNCTIONALITY (CRUD) ====================
+
+        function openCatalogManager() {
+            document.getElementById('catalog-manager-modal').classList.remove('hidden');
+            switchCatalogTab('products');
+            populateCategoryDropdowns();
         }
 
-        function closeProductModal() {
-            document.getElementById('product-modal').classList.add('hidden');
+        function closeCatalogManager() {
+            document.getElementById('catalog-manager-modal').classList.add('hidden');
+            // Clean dynamic lists state when closing
+            resetProductForm();
+            resetCategoryForm();
         }
 
-        // Save new menu item to memory state
-        function handleProductFormSubmit(e) {
+        function switchCatalogTab(tab) {
+            catalogManagerActiveTab = tab;
+            const tabProducts = document.getElementById('tab-btn-products');
+            const tabCategories = document.getElementById('tab-btn-categories');
+            const paneProducts = document.getElementById('catalog-pane-products');
+            const paneCategories = document.getElementById('catalog-pane-categories');
+
+            if (tab === 'products') {
+                tabProducts.className = "flex-1 py-3 text-center font-black text-xs uppercase tracking-wider border-r border-neutral-800 transition-all bg-[#1a1a1a] text-[#f39c12] border-b-2 border-b-[#f39c12]";
+                tabCategories.className = "flex-1 py-3 text-center font-black text-xs uppercase tracking-wider transition-all hover:bg-neutral-850 text-neutral-400";
+                paneProducts.classList.remove('hidden');
+                paneCategories.classList.add('hidden');
+                renderCatalogManagerProducts();
+            } else {
+                tabCategories.className = "flex-1 py-3 text-center font-black text-xs uppercase tracking-wider transition-all bg-[#1a1a1a] text-[#f39c12] border-b-2 border-b-[#f39c12]";
+                tabProducts.className = "flex-1 py-3 text-center font-black text-xs uppercase tracking-wider border-r border-neutral-800 transition-all hover:bg-neutral-850 text-neutral-400";
+                paneCategories.classList.remove('hidden');
+                paneProducts.classList.add('hidden');
+                renderCatalogManagerCategories();
+            }
+        }
+
+        // RENDER PRODUCTS IN CATALOG MANAGER
+        function renderCatalogManagerProducts() {
+            const list = document.getElementById('catalog-products-list');
+            if (!list) return;
+
+            const query = document.getElementById('catalog-product-search').value.trim().toLowerCase();
+            const filteredProds = products.filter(p => query === "" || p.name.toLowerCase().includes(query));
+
+            if (filteredProds.length === 0) {
+                list.innerHTML = `<div class="p-4 text-center text-neutral-500 font-bold uppercase">No products registered</div>`;
+                return;
+            }
+
+            list.innerHTML = filteredProds.map(prod => {
+                const catObj = categories.find(c => c.id === prod.category);
+                const catName = catObj ? catObj.name : "UNTAGGED";
+                return `
+                    <div class="flex justify-between items-center px-3 py-2 text-white hover:bg-neutral-800 transition-all">
+                        <div class="min-w-0 pr-2">
+                            <div class="font-black uppercase truncate text-sm">${prod.name}</div>
+                            <div class="text-[10px] text-[#f39c12] font-semibold mt-0.5 uppercase tracking-wide">₹${prod.price} • ${catName}</div>
+                        </div>
+                        <div class="flex space-x-1 shrink-0">
+                            <button onclick="editProductInCatalog('${prod.id}')" class="px-2.5 py-1.5 rounded bg-amber-500/15 text-amber-500 hover:bg-amber-500 hover:text-white transition-all text-[10px] font-bold uppercase">
+                                <i class="fa-solid fa-pencil"></i>
+                            </button>
+                            <button onclick="deleteProductInCatalog('${prod.id}')" class="px-2.5 py-1.5 rounded bg-red-600/15 text-red-500 hover:bg-red-600 hover:text-white transition-all text-[10px] font-bold uppercase">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // SAVE / UPDATE PRODUCT LOGIC
+        function handleProductSubmit(e) {
             e.preventDefault();
-            const prodName = document.getElementById('form-prod-name').value.trim();
-            const prodPrice = parseFloat(document.getElementById('form-prod-price').value);
-            const prodCat = document.getElementById('form-prod-category').value;
+            const prodName = document.getElementById('form-product-name').value.trim().toUpperCase();
+            const prodCategory = document.getElementById('form-product-category').value;
+            const prodPrice = parseFloat(document.getElementById('form-product-price').value);
 
             if (!prodName || isNaN(prodPrice)) return;
 
-            const newProd = {
-                id: 'custom-' + Date.now(),
-                name: prodName.toUpperCase(),
-                category: prodCat,
-                price: prodPrice
-            };
+            if (activeEditingProductId) {
+                // UPDATE OPERATION
+                const idx = products.findIndex(p => p.id === activeEditingProductId);
+                if (idx > -1) {
+                    products[idx].name = prodName;
+                    products[idx].category = prodCategory;
+                    products[idx].price = prodPrice;
+                }
+                activeEditingProductId = null;
+                showCustomAlert("Product Updated", `${prodName} has been successfully modified.`);
+            } else {
+                // CREATE OPERATION
+                // Check if name already exists to override or avoid duplicates
+                const existingIdx = products.findIndex(p => p.name === prodName);
+                if (existingIdx > -1) {
+                    products[existingIdx].category = prodCategory;
+                    products[existingIdx].price = prodPrice;
+                    showCustomAlert("Product Updated", `${prodName} already existed and was updated.`);
+                } else {
+                    const newProduct = {
+                        id: "p-custom-" + Date.now(),
+                        name: prodName,
+                        category: prodCategory,
+                        price: prodPrice
+                    };
+                    products.push(newProduct);
+                    showCustomAlert("Product Added", `${prodName} created successfully.`);
+                }
+            }
 
-            products.push(newProd);
             safeSetItem("chill_products", products);
+            resetProductForm();
+            renderCatalogManagerProducts();
             renderPOSCatalog();
-            closeProductModal();
-            showCustomAlert("Product Added", `${prodName.toUpperCase()} is now listed under category defaults.`);
         }
+
+        function editProductInCatalog(id) {
+            const prod = products.find(p => p.id === id);
+            if (!prod) return;
+
+            activeEditingProductId = prod.id;
+            document.getElementById('form-product-id').value = prod.id;
+            document.getElementById('form-product-name').value = prod.name;
+            document.getElementById('form-product-category').value = prod.category;
+            document.getElementById('form-product-price').value = prod.price;
+
+            document.getElementById('product-form-title').textContent = "Modify Product";
+            document.getElementById('product-form-submit-btn').textContent = "Update Item";
+        }
+
+        function deleteProductInCatalog(id) {
+            const prod = products.find(p => p.id === id);
+            if (!prod) return;
+
+            showCustomConfirm(`Permanently delete ${prod.name} from menu catalog?`, (yes) => {
+                if (yes) {
+                    products = products.filter(p => p.id !== id);
+                    safeSetItem("chill_products", products);
+                    
+                    // Also remove from active checkout cart if present
+                    cart = cart.filter(item => item.id !== id);
+                    renderAddedCartRows();
+                    
+                    renderCatalogManagerProducts();
+                    renderPOSCatalog();
+                    resetProductForm();
+                }
+            });
+        }
+
+        function resetProductForm() {
+            activeEditingProductId = null;
+            document.getElementById('form-product-id').value = '';
+            document.getElementById('form-product-name').value = '';
+            document.getElementById('form-product-price').value = '';
+            document.getElementById('product-form-title').textContent = "New Product Form";
+            document.getElementById('product-form-submit-btn').textContent = "Save Item";
+        }
+
+        // RENDER CATEGORIES IN CATALOG MANAGER
+        function renderCatalogManagerCategories() {
+            const list = document.getElementById('catalog-categories-list');
+            if (!list) return;
+
+            if (categories.length === 0) {
+                list.innerHTML = `<div class="p-4 text-center text-neutral-500 font-bold uppercase">No categories registered</div>`;
+                return;
+            }
+
+            list.innerHTML = categories.map(cat => {
+                // Count products inside this category
+                const count = products.filter(p => p.category === cat.id).length;
+                return `
+                    <div class="flex justify-between items-center px-3 py-2 text-white hover:bg-neutral-800 transition-all">
+                        <div class="min-w-0 pr-2">
+                            <div class="font-black uppercase truncate text-sm">${cat.name}</div>
+                            <div class="text-[10px] text-neutral-400 font-medium mt-0.5 uppercase tracking-wide">ID Slug: ${cat.id} • ${count} food items</div>
+                        </div>
+                        <div class="flex space-x-1 shrink-0">
+                            <button onclick="editCategoryInCatalog('${cat.id}')" class="px-2.5 py-1.5 rounded bg-amber-500/15 text-amber-500 hover:bg-amber-500 hover:text-white transition-all text-[10px] font-bold uppercase">
+                                <i class="fa-solid fa-pencil"></i>
+                            </button>
+                            <button onclick="deleteCategoryInCatalog('${cat.id}')" class="px-2.5 py-1.5 rounded bg-red-600/15 text-red-500 hover:bg-red-600 hover:text-white transition-all text-[10px] font-bold uppercase">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // SAVE / UPDATE CATEGORIES LOGIC
+        function handleCategorySubmit(e) {
+            e.preventDefault();
+            const catSlug = document.getElementById('form-category-slug').value.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '');
+            const catName = document.getElementById('form-category-name').value.trim().toUpperCase();
+
+            if (!catSlug || !catName) return;
+
+            if (activeEditingCategoryId) {
+                // UPDATE OPERATION
+                const idx = categories.findIndex(c => c.id === activeEditingCategoryId);
+                if (idx > -1) {
+                    categories[idx].name = catName;
+                }
+                activeEditingCategoryId = null;
+                showCustomAlert("Category Updated", `Display title updated to ${catName}.`);
+            } else {
+                // CREATE OPERATION
+                // Check if slug or name exists
+                const existingSlugIdx = categories.findIndex(c => c.id === catSlug);
+                if (existingSlugIdx > -1) {
+                    showCustomAlert("Slug Collision", `ID slug '${catSlug}' is already assigned. Please choose another.`);
+                    return;
+                }
+
+                const newCategory = {
+                    id: catSlug,
+                    name: catName
+                };
+                categories.push(newCategory);
+                showCustomAlert("Category Created", `${catName} added to layout templates.`);
+            }
+
+            safeSetItem("chill_categories", categories);
+            resetCategoryForm();
+            populateCategoryDropdowns();
+            renderCatalogManagerCategories();
+            renderCategoryFilters();
+            renderPOSCatalog();
+        }
+
+        function editCategoryInCatalog(id) {
+            const cat = categories.find(c => c.id === id);
+            if (!cat) return;
+
+            activeEditingCategoryId = cat.id;
+            document.getElementById('form-category-id').value = cat.id;
+            document.getElementById('form-category-slug').value = cat.id;
+            document.getElementById('form-category-slug').disabled = true; // Block slug ID editing
+            document.getElementById('form-category-name').value = cat.name;
+
+            document.getElementById('category-form-title').textContent = "Modify Category";
+            document.getElementById('category-form-submit-btn').textContent = "Update Display Title";
+        }
+
+        function deleteCategoryInCatalog(id) {
+            const cat = categories.find(c => c.id === id);
+            if (!cat) return;
+
+            showCustomConfirm(`Delete category ${cat.name}? Note: Assigned products will remain but will show as Untagged.`, (yes) => {
+                if (yes) {
+                    categories = categories.filter(c => c.id !== id);
+                    safeSetItem("chill_categories", categories);
+
+                    // Reassign products category property safely
+                    products.forEach(p => {
+                        if (p.category === id) p.category = 'untagged';
+                    });
+                    safeSetItem("chill_products", products);
+
+                    renderCatalogManagerCategories();
+                    populateCategoryDropdowns();
+                    renderCategoryFilters();
+                    renderPOSCatalog();
+                    resetCategoryForm();
+                }
+            });
+        }
+
+        function resetCategoryForm() {
+            activeEditingCategoryId = null;
+            document.getElementById('form-category-id').value = '';
+            document.getElementById('form-category-slug').value = '';
+            document.getElementById('form-category-slug').disabled = false;
+            document.getElementById('form-category-name').value = '';
+            document.getElementById('category-form-title').textContent = "New Category Form";
+            document.getElementById('category-form-submit-btn').textContent = "Save Category";
+        }
+
+        // ==================== END CATALOG MANAGER ====================
 
         // Focus search overlay text field
         function toggleBarcodeFocus() {
