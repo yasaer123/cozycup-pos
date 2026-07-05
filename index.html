@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Mobile PWA Standalone Fullscreen Meta Headers -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#121212">
     <title>Chill Out Cafe - Premium POS</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -75,6 +80,10 @@
             </div>
             
             <div class="flex items-center space-x-2">
+                <button id="pwa-install-btn" class="hidden px-2.5 py-1.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[10px] uppercase flex items-center space-x-1 transition-all">
+                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                    <span>Install App</span>
+                </button>
                 <button onclick="toggleTheme()" class="px-2.5 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs text-neutral-400" title="Toggle UI Color Mode">
                     <i id="theme-toggle-icon" class="fa-solid fa-moon"></i>
                 </button>
@@ -93,11 +102,11 @@
         <!-- ==================== TAB 1: POS BILLING SYSTEM ==================== -->
         <!-- Responsive Dual Split Grid:
              Portrait: Upper Cart (38vh), Middle Control, Bottom Catalog (scrollable)
-             Landscape: left split 55% Products / right split 45% Cart side-by-side -->
+             Landscape: left split 58% Products / right split 42% Cart side-by-side -->
         <div id="view-pos" class="tab-view h-full flex flex-col md:flex-row-reverse bg-[#121212]">
             
             <!-- UPPER HALF/RIGHT COLUMN: ACTIVE CART BILLING SYSTEM -->
-            <div class="flex flex-col h-[40%] md:h-full md:w-[42%] shrink-0 bg-[#161616] border-b md:border-b-0 md:border-l border-neutral-850">
+            <div class="flex flex-col h-[38%] md:h-full md:w-[42%] shrink-0 bg-[#161616] border-b md:border-b-0 md:border-l border-neutral-850">
                 <!-- Cart Orange Header Bar -->
                 <div class="bg-[#e67e22] text-white px-4 py-2 grid grid-cols-12 text-[11px] font-black tracking-wider uppercase shrink-0">
                     <div class="col-span-6">ITEM</div>
@@ -106,7 +115,7 @@
                     <div class="col-span-2 text-right">TOTAL</div>
                 </div>
 
-                <!-- Scrollable Added Cart List Area -->
+                <!-- Scrollable Added Cart List Area (Higher density to view 7+ products) -->
                 <div class="flex-1 overflow-y-auto px-1 py-1 space-y-1" id="cart-items-list">
                     <div id="cart-empty-state" class="flex flex-col items-center justify-center h-full text-neutral-500 py-6">
                         <i class="fa-solid fa-basket-shopping text-2xl mb-1 opacity-40"></i>
@@ -250,6 +259,34 @@
 
     </main>
 
+    <!-- Inline Cart Edit Price/Quantity Modal -->
+    <div id="cart-item-edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/85" onclick="closeCartItemEditModal()"></div>
+        <div class="bg-[#1a1a1a] border border-neutral-800 rounded-lg max-w-sm w-full p-5 relative z-10 text-xs">
+            <h3 class="text-xs font-black text-white uppercase tracking-wider mb-3">Adjust Cart Item</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-black text-neutral-400 uppercase mb-1">Item Title</label>
+                    <input type="text" id="edit-cart-item-name" disabled class="w-full bg-neutral-900 border border-neutral-700 rounded px-3 py-2 text-neutral-400">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] font-black text-neutral-400 uppercase mb-1">Quantity</label>
+                        <input type="number" id="edit-cart-item-qty" min="1" step="1" class="w-full bg-[#121212] border border-neutral-700 rounded px-3 py-2 text-white font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-neutral-400 uppercase mb-1">Price (₹)</label>
+                        <input type="number" id="edit-cart-item-price" min="0" step="1" class="w-full bg-[#121212] border border-neutral-700 rounded px-3 py-2 text-white font-bold">
+                    </div>
+                </div>
+                <div class="pt-2 flex space-x-2">
+                    <button onclick="closeCartItemEditModal()" class="flex-1 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-bold py-2 rounded">Cancel</button>
+                    <button onclick="saveCartItemEdit()" class="flex-1 bg-orange-500 text-white font-bold py-2 rounded">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Add/Edit Product Modal Dialog -->
     <div id="product-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="fixed inset-0 bg-black/85 backdrop-blur-xs" onclick="closeProductModal()"></div>
@@ -339,6 +376,23 @@
         </div>
     </div>
 
+    <!-- Instructions Modal for iOS and Desktop installation -->
+    <div id="pwa-instructions-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/80" onclick="closePwaInstructions()"></div>
+        <div class="bg-[#1a1a1a] border border-neutral-800 rounded-lg max-w-xs w-full p-5 relative z-10 text-center">
+            <i class="fa-solid fa-circle-info text-2xl text-orange-400 mb-2"></i>
+            <h4 class="text-xs font-black text-white uppercase tracking-wider">App Installation Help</h4>
+            <p class="text-[11px] text-neutral-400 mt-2 mb-4 leading-relaxed">
+                To run this POS as a fullscreen application on your home screen:<br><br>
+                <span class="text-white font-bold">On Android (Chrome)</span>: Tap the browser menu (<i class="fa-solid fa-ellipsis-vertical"></i>) -> select <span class="text-orange-400">Add to Home screen</span>.<br><br>
+                <span class="text-white font-bold">On iPad/iPhone (Safari)</span>: Tap Share button (<i class="fa-solid fa-square-share-nodes"></i>) -> select <span class="text-orange-400">Add to Home Screen</span>.
+            </p>
+            <button onclick="closePwaInstructions()" class="w-full bg-[#333333] hover:bg-[#444444] text-white font-black py-2 rounded text-xs uppercase">
+                Got It
+            </button>
+        </div>
+    </div>
+
     <!-- Sandboxed Hidden Framing Elements for Printing operations -->
     <iframe id="print-iframe" class="hidden" style="width:0; height:0; position:absolute; left:-9999px;"></iframe>
 
@@ -356,8 +410,9 @@
         let currentEditTicketId = null; 
         let pendingTxRecord = null;
         let confirmResolve = null;
+        let selectedCartItemIdx = null;
 
-        // Seeding full menu based on "Your paragraph text (4).pdf"
+        // Extracting all product entries verbatim from: "Your paragraph text (4).pdf"
         const defaultCategories = [
             { id: "cat-bev", name: "Hot Beverages" },
             { id: "cat-bites", name: "Quick Bites" },
@@ -561,7 +616,39 @@
                 }
             });
 
+            // Initialize Progressive Web App Installer Hook
+            initPwaInstaller();
+
             refreshAllUI();
+        }
+
+        let deferredPrompt = null;
+        function initPwaInstaller() {
+            const btn = document.getElementById('pwa-install-btn');
+            
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                btn.classList.remove('hidden');
+            });
+
+            btn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        btn.classList.add('hidden');
+                    }
+                    deferredPrompt = null;
+                } else {
+                    // Fallback visual instruction dialogue for Safari / Manual installs
+                    document.getElementById('pwa-instructions-modal').classList.remove('hidden');
+                }
+            });
+        }
+
+        function closePwaInstructions() {
+            document.getElementById('pwa-instructions-modal').classList.add('hidden');
         }
 
         function toggleTheme() {
@@ -731,6 +818,33 @@
             recalculateCart();
         }
 
+        function openCartItemEdit(idx) {
+            const item = cart[idx];
+            if (!item) return;
+            selectedCartItemIdx = idx;
+            document.getElementById('edit-cart-item-name').value = item.product.name;
+            document.getElementById('edit-cart-item-qty').value = item.quantity;
+            document.getElementById('edit-cart-item-price').value = item.product.price;
+            document.getElementById('cart-item-edit-modal').classList.remove('hidden');
+        }
+
+        function closeCartItemEditModal() {
+            document.getElementById('cart-item-edit-modal').classList.add('hidden');
+            selectedCartItemIdx = null;
+        }
+
+        function saveCartItemEdit() {
+            if (selectedCartItemIdx === null) return;
+            const newQty = parseInt(document.getElementById('edit-cart-item-qty').value) || 1;
+            const newPrice = parseFloat(document.getElementById('edit-cart-item-price').value) || 0;
+            
+            cart[selectedCartItemIdx].quantity = newQty;
+            cart[selectedCartItemIdx].product.price = newPrice;
+            
+            closeCartItemEditModal();
+            recalculateCart();
+        }
+
         function clearCart() {
             cart = [];
             currentEditTicketId = null;
@@ -761,14 +875,16 @@
                 return;
             }
 
-            cart.forEach(item => {
+            cart.forEach((item, idx) => {
                 const subtotal = item.product.price * item.quantity;
                 const row = document.createElement('div');
                 row.className = "grid grid-cols-12 items-center text-[11px] font-bold py-1.5 px-3 bg-[#1e1e1e] border-b border-neutral-850 hover:bg-neutral-800 transition-colors";
                 row.innerHTML = `
-                    <div class="col-span-6 flex flex-col min-w-0 pr-2">
+                    <div class="col-span-6 flex items-center min-w-0 pr-2">
                         <span class="text-white font-extrabold truncate uppercase text-xs">${item.product.name}</span>
-                        <span class="text-[10px] text-neutral-400 mt-0.5">Rate: ₹${item.product.price}</span>
+                        <button onclick="openCartItemEdit(${idx})" class="ml-1.5 text-neutral-400 hover:text-orange-400" title="Modify item variables">
+                            <i class="fa-solid fa-pen text-[9px]"></i>
+                        </button>
                     </div>
                     <div class="col-span-2 flex items-center justify-center space-x-1">
                         <button onclick="updateCartQty('${item.product.id}', -1)" class="w-5 h-5 rounded bg-neutral-800 text-white flex items-center justify-center font-bold text-xs">-</button>
