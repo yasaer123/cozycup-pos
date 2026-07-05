@@ -1,44 +1,48 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CozyCup Café - Premium POS & Billing System</title>
-    <!-- Tailwind CSS for responsive grid layouts -->
+    <title>Chill Out Cafe & Restaurant - Premium POS</title>
+    <!-- Tailwind CSS for modern interactive layout grid system -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for modern interface icons -->
+    <!-- FontAwesome for robust, highly visible touch-friendly icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter & Courier Prime (for thermal print output simulation) -->
+    <!-- Google Fonts: Inter & Courier Prime for receipts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- SheetJS for compiling Excel reports -->
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- SheetJS for instant, robust Excel compilations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
-        /* Touch optimized compact scrolling */
+        /* Custom scrollbar configurations for ultra-fast fingertip scroll */
         ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
+            width: 6px;
+            height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #f1f5f9;
+            background: transparent;
+        }
+        .dark-mode-active ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb {
             background: #cbd5e1;
-            border-radius: 2px;
+            border-radius: 4px;
         }
-        /* Custom styled receipt formatting */
+        /* Thermal receipt alignment */
         .thermal-font {
             font-family: 'Courier Prime', 'Courier', monospace;
         }
         .thermal-paper {
             background-color: #fffffb;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05), inset 0 0 40px rgba(0,0,0,0.02);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08), inset 0 0 40px rgba(0,0,0,0.01);
             position: relative;
         }
         .thermal-paper::after {
@@ -52,7 +56,6 @@
             background-size: 10px 10px;
             transform: translateY(5px);
         }
-        /* Hide scrollbars for slick category swipe row */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -63,15 +66,16 @@
     </style>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
                         brand: {
                             50: '#fdf8f6',
                             100: '#f2e8e5',
-                            500: '#8c6239', /* Coffee Brown theme color */
-                            600: '#734d29',
-                            700: '#5c3a1d',
+                            500: '#b25329', /* Terracotta warmth styling */
+                            600: '#97411d',
+                            700: '#7c3315',
                             accent: '#e67e22'
                         }
                     }
@@ -80,201 +84,214 @@
         }
     </script>
 </head>
-<body class="h-full flex flex-col text-slate-800 antialiased overflow-hidden">
+<body class="h-full flex flex-col text-slate-800 bg-slate-100 antialiased overflow-hidden transition-colors duration-250">
 
-    <header class="bg-white border-b border-slate-200 shrink-0 z-40 shadow-xs">
-        <div class="px-4 mx-auto">
-            <div class="flex justify-between h-14">
-                <div class="flex items-center space-x-2">
-                    <div class="bg-brand-500 text-white p-1.5 rounded-lg">
-                        <i class="fa-solid fa-mug-hot text-base"></i>
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shrink-0 z-40 shadow-xs transition-colors duration-250">
+        <div class="px-4 py-2">
+            <div class="flex justify-between items-center h-14">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-brand-500 text-white p-2.5 rounded-xl">
+                        <i class="fa-solid fa-mug-hot text-xl"></i>
                     </div>
                     <div>
-                        <h1 class="text-sm font-bold tracking-tight text-slate-900 leading-none">CozyCup <span class="text-brand-500 font-medium">POS</span></h1>
-                        <p class="text-[9px] text-slate-400 mt-0.5">Billing System</p>
+                        <h1 class="text-base font-black tracking-tight text-slate-900 dark:text-white leading-none">
+                            Chill Out <span class="text-brand-500 font-bold">Cafe</span>
+                        </h1>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1">POS & Billing Manager</p>
                     </div>
                 </div>
 
-                <!-- Touch Optimized Navigation Menu Tabs -->
-                <nav class="flex space-x-1 my-auto" aria-label="Tabs">
-                    <button onclick="switchTab('pos')" id="tab-pos" class="tab-btn flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 bg-brand-500 text-white shadow-sm shadow-brand-500/10">
-                        <i class="fa-solid fa-cash-register"></i>
-                        <span class="hidden xs:inline">POS</span>
+                <!-- Navigations and System Mode Controls -->
+                <div class="flex items-center space-x-2">
+                    <!-- Light/Dark Mode Switcher -->
+                    <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-850 text-slate-700 dark:text-slate-200 flex items-center justify-center transition-all hover:bg-slate-200 dark:hover:bg-slate-800" title="Toggle Light/Dark Theme">
+                        <i id="theme-icon" class="fa-solid fa-moon text-base"></i>
                     </button>
-                    <button onclick="switchTab('settings')" id="tab-settings" class="tab-btn flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all duration-150">
-                        <i class="fa-solid fa-sliders"></i>
-                        <span class="hidden xs:inline">Settings</span>
-                    </button>
-                    <button onclick="switchTab('reports')" id="tab-reports" class="tab-btn flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all duration-150">
-                        <i class="fa-solid fa-chart-line"></i>
-                        <span class="hidden xs:inline">Reports</span>
-                    </button>
-                    <button onclick="switchTab('designer')" id="tab-designer" class="tab-btn flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all duration-150">
-                        <i class="fa-solid fa-receipt"></i>
-                        <span class="hidden xs:inline">Designer</span>
-                    </button>
-                </nav>
+
+                    <!-- Responsive Mode Action Tabs -->
+                    <nav class="flex space-x-1" aria-label="Tabs">
+                        <button onclick="switchTab('pos')" id="tab-pos" class="tab-btn flex items-center space-x-2 px-3.5 py-2.5 rounded-xl text-sm font-extrabold transition-all duration-150 bg-brand-500 text-white shadow-md shadow-brand-500/10">
+                            <i class="fa-solid fa-cash-register"></i>
+                            <span class="hidden sm:inline">POS</span>
+                        </button>
+                        <button onclick="switchTab('settings')" id="tab-settings" class="tab-btn flex items-center space-x-2 px-3.5 py-2.5 rounded-xl text-sm font-extrabold text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all duration-150">
+                            <i class="fa-solid fa-sliders"></i>
+                            <span class="hidden sm:inline">Settings</span>
+                        </button>
+                        <button onclick="switchTab('reports')" id="tab-reports" class="tab-btn flex items-center space-x-2 px-3.5 py-2.5 rounded-xl text-sm font-extrabold text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all duration-150">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span class="hidden sm:inline">Reports</span>
+                        </button>
+                        <button onclick="switchTab('designer')" id="tab-designer" class="tab-btn flex items-center space-x-2 px-3.5 py-2.5 rounded-xl text-sm font-extrabold text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all duration-150">
+                            <i class="fa-solid fa-receipt"></i>
+                            <span class="hidden sm:inline">Designer</span>
+                        </button>
+                    </nav>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Views Display Viewports -->
     <main class="flex-1 overflow-hidden relative">
 
-        <!-- ==================== TAB 1: BILLING POS (VERTICAL SPLIT) ==================== -->
-        <div id="view-pos" class="tab-view h-full flex flex-col divide-y divide-slate-200 bg-slate-100">
+        <!-- ==================== TAB 1: BILLING POS (PC SIDE-BY-SIDE / TABLET SPLIT-STACK) ==================== -->
+        <div id="view-pos" class="tab-view h-full flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-slate-800 bg-slate-50 dark:bg-slate-950">
             
-            <!-- UPPER HALF: Compact Order Cart Area -->
-            <div class="h-[38%] min-h-[160px] max-h-[300px] flex flex-col bg-white border-b border-slate-200 shadow-sm overflow-hidden z-10">
-                <!-- Cart Header & Mini Controls (Compact Icon Actions) -->
-                <div class="px-3 py-1.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
-                    <div class="flex items-center space-x-1.5">
-                        <span class="bg-brand-100 text-brand-700 text-[10px] px-2 py-0.5 rounded-full font-extrabold" id="cart-item-count">0 Items</span>
-                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Cart</span>
+            <!-- PORTRAIT: TOP / LANDSCAPE: RIGHT -> Compact Interactive Order Cart Panel -->
+            <div class="h-[40%] min-h-[220px] md:h-full md:w-[420px] shrink-0 flex flex-col bg-white dark:bg-slate-900 shadow-lg overflow-hidden transition-all duration-250">
+                
+                <!-- Cart Header block containing high tactile actions -->
+                <div class="px-4 py-2.5 bg-slate-50 dark:bg-slate-850 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-brand-100 dark:bg-brand-950/70 text-brand-700 dark:text-brand-400 text-xs px-2.5 py-1 rounded-full font-black" id="cart-item-count">0 Items</span>
+                        <span class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Checkout Cart</span>
                     </div>
 
-                    <!-- Compact Touch Friendly Action Buttons -->
+                    <!-- Direct checkout control targets -->
                     <div class="flex items-center space-x-1.5">
-                        <!-- Save Order (No Print) -->
-                        <button onclick="processCheckout(false)" class="w-8 h-8 bg-slate-800 hover:bg-slate-900 text-white rounded-lg flex items-center justify-center transition-all active:scale-90" title="Save Order (No Print)">
-                            <i class="fa-solid fa-floppy-disk text-xs"></i>
+                        <!-- Direct Save checkout -->
+                        <button onclick="processCheckout(false)" class="w-10 h-10 bg-slate-800 dark:bg-slate-700 text-white rounded-xl flex items-center justify-center transition-all hover:bg-slate-950 dark:hover:bg-slate-600 active:scale-90" title="Save Ledger Record Only">
+                            <i class="fa-solid fa-floppy-disk text-base"></i>
                         </button>
-                        <!-- Print Receipt (With Dialog Safeguard) -->
-                        <button onclick="processCheckout(true)" class="w-8 h-8 bg-brand-500 hover:bg-brand-600 text-white rounded-lg flex items-center justify-center transition-all active:scale-90 shadow-xs" title="Print Receipt">
-                            <i class="fa-solid fa-print text-xs"></i>
+                        <!-- Print thermal options print workflow dispatchers -->
+                        <button onclick="processCheckout(true)" class="w-10 h-10 bg-brand-500 text-white rounded-xl flex items-center justify-center transition-all hover:bg-brand-600 active:scale-90 shadow-sm shadow-brand-500/10" title="Compile and Print Thermal Receipt">
+                            <i class="fa-solid fa-print text-base"></i>
                         </button>
-                        <!-- Clear Current Cart -->
-                        <button onclick="clearCart()" class="w-8 h-8 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg flex items-center justify-center transition-all active:scale-90" title="Clear Draft">
-                            <i class="fa-regular fa-trash-can text-xs"></i>
+                        <!-- Clear active drafts -->
+                        <button onclick="clearCart()" class="w-10 h-10 bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center transition-all hover:bg-red-100 dark:hover:bg-red-900/40 active:scale-90" title="Wipe Cart Draft">
+                            <i class="fa-regular fa-trash-can text-base"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Order Grand Total Strip (Removed Discounts completely) -->
-                <div class="px-3 py-1 bg-slate-100/50 border-b border-slate-200 flex justify-between items-center shrink-0">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Amount Due:</span>
-                    <span class="text-base font-black text-slate-900" id="cart-grand-total">₹0.00</span>
+                <!-- Active checkout total amount strip -->
+                <div class="px-4 py-3 bg-brand-50 dark:bg-slate-850/50 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center shrink-0">
+                    <span class="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Amount Payable:</span>
+                    <span class="text-2xl font-black text-brand-600 dark:text-brand-400" id="cart-grand-total">₹0.00</span>
                 </div>
 
-                <!-- Editing Historical Invoice Status Bar -->
-                <div id="editing-order-banner" class="hidden bg-amber-50 border-b border-amber-200 px-3 py-1 shrink-0 flex justify-between items-center transition-all">
-                    <span class="text-[10px] font-bold text-amber-800 flex items-center">
-                        <i class="fa-solid fa-pen-to-square animate-pulse mr-1"></i> Modifying Order: <span id="editing-order-id" class="underline ml-0.5"></span>
+                <!-- Active modify order warning banner -->
+                <div id="editing-order-banner" class="hidden bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/50 px-4 py-2 shrink-0 flex justify-between items-center transition-all">
+                    <span class="text-xs font-black text-amber-800 dark:text-amber-400 flex items-center">
+                        <i class="fa-solid fa-pen-to-square mr-1.5 animate-pulse"></i> Modifying Order: <span id="editing-order-id" class="underline ml-1"></span>
                     </span>
-                    <button onclick="cancelEditingOrder()" class="text-[9px] text-red-600 font-bold uppercase tracking-wide bg-red-50 px-1.5 py-0.5 rounded-md hover:bg-red-100">Cancel</button>
+                    <button onclick="cancelEditingOrder()" class="text-[10px] text-red-600 dark:text-red-400 font-extrabold uppercase tracking-wide bg-red-50 dark:bg-red-950/40 px-2 py-1 rounded-lg">Cancel</button>
                 </div>
 
-                <!-- Scrollable Order Line Items -->
-                <div class="flex-1 overflow-y-auto px-3 py-1.5 space-y-1" id="cart-items-list">
-                    <!-- Dynamic Cart Line Items loaded here -->
-                    <div id="cart-empty-state" class="flex flex-col items-center justify-center h-full py-6 text-slate-400">
-                        <p class="font-semibold text-xs text-slate-400">Your cart is empty</p>
-                        <p class="text-[9px] mt-0.5 text-slate-300">Select items from the catalog below</p>
+                <!-- Streamlined Cart Items list -->
+                <div class="flex-1 overflow-y-auto px-4 py-2 space-y-2" id="cart-items-list">
+                    <div id="cart-empty-state" class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500">
+                        <i class="fa-solid fa-basket-shopping text-3xl text-slate-300 dark:text-slate-700 mb-2"></i>
+                        <p class="font-bold text-sm">Cart is empty</p>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Tap products below to start billing</p>
                     </div>
                 </div>
             </div>
 
-            <!-- LOWER HALF: Compact Products Display & Utility Control Strip -->
-            <div class="flex-1 flex flex-col min-h-0 bg-slate-50 overflow-hidden">
+            <!-- PORTRAIT: BOTTOM / LANDSCAPE: LEFT -> Interactive Multi-Row Catalog Panel -->
+            <div class="flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950">
                 
-                <!-- Ultra Compact Search & Swipable Category Pill Strip -->
-                <div class="px-3 py-1.5 bg-white border-b border-slate-200 flex flex-col xs:flex-row items-stretch xs:items-center gap-2 shrink-0 shadow-3xs z-10">
-                    <!-- Compact Search box -->
-                    <div class="relative rounded-lg flex-1">
-                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
-                            <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
+                <!-- Expanded Easy-Tap Search & Categories Navigation Strip -->
+                <div class="px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex flex-col space-y-2.5 shrink-0 z-10 transition-colors duration-250">
+                    <div class="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+                        <!-- Easy-to-use search panel -->
+                        <div class="relative rounded-xl flex-1">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                            </div>
+                            <input type="text" id="pos-search" oninput="filterPOSProducts()" placeholder="Search menu... (Press '/' to search)" 
+                                class="block w-full pl-9 pr-4 py-2.5 text-sm font-semibold border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all">
                         </div>
-                        <input type="text" id="pos-search" oninput="filterPOSProducts()" placeholder="Search... (Press '/' to focus)" 
-                            class="block w-full pl-7 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg bg-slate-50/50 hover:bg-white focus:outline-hidden focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all">
                     </div>
-                    <!-- Horizontally Swipable Compact Categories -->
-                    <div class="flex items-center space-x-1 overflow-x-auto py-0.5 shrink-0 max-w-full xs:max-w-[60%] no-scrollbar" id="pos-category-filters" style="-webkit-overflow-scrolling: touch;">
-                        <!-- Dynamic Pills injected here -->
+
+                    <!-- Horizontally scrollable touch-oriented category selection pills -->
+                    <div class="flex items-center space-x-1.5 overflow-x-auto py-1 no-scrollbar shrink-0 max-w-full" id="pos-category-filters" style="-webkit-overflow-scrolling: touch;">
+                        <!-- Seeded categories automatically inject here -->
                     </div>
                 </div>
 
-                <!-- Scrollable Grid View of Menu Cards (Ultra-compact configuration for maximum density) -->
-                <div class="flex-1 overflow-y-auto p-2">
-                    <div id="pos-products-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2">
-                        <!-- Dynamic menu items will load here -->
+                <!-- Master Products Grid -->
+                <div class="flex-1 overflow-y-auto p-4">
+                    <div id="pos-products-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                        <!-- Loaded dynamically -->
                     </div>
-                    <!-- Search query no-results empty state -->
-                    <div id="pos-empty-state" class="hidden flex-col items-center justify-center py-10 text-slate-400">
-                        <i class="fa-solid fa-circle-question text-xl text-slate-300 mb-1"></i>
-                        <p class="text-xs font-semibold text-slate-500">No matching products</p>
+                    <!-- Empty searches state -->
+                    <div id="pos-empty-state" class="hidden flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-500">
+                        <i class="fa-solid fa-mug-hot text-4xl text-slate-300 dark:text-slate-800 mb-2"></i>
+                        <p class="text-sm font-bold">No products matched your search</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ==================== TAB 2: SETTINGS (PRODUCTS & CATEGORIES) ==================== -->
-        <div id="view-settings" class="tab-view hidden h-full overflow-y-auto bg-slate-50">
-            <div class="max-w-5xl mx-auto px-4 py-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- ==================== TAB 2: SYSTEM SETTINGS ==================== -->
+        <div id="view-settings" class="tab-view hidden h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 transition-colors duration-250">
+            <div class="max-w-6xl mx-auto px-4 py-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     
                     <!-- Categories Management Block -->
-                    <div class="space-y-4">
-                        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-                            <h2 class="text-sm font-bold text-slate-900 flex items-center mb-3">
-                                <i class="fa-solid fa-tags text-brand-500 mr-2"></i>
-                                Categories
+                    <div class="lg:col-span-4 space-y-6">
+                        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm transition-colors duration-250">
+                            <h2 class="text-sm font-black text-slate-900 dark:text-white flex items-center mb-4 uppercase tracking-wider">
+                                <i class="fa-solid fa-tags text-brand-500 mr-2.5"></i>
+                                Category Catalog
                             </h2>
 
                             <!-- Add Category -->
-                            <form onsubmit="handleCategorySubmit(event)" class="space-y-2 mb-4">
+                            <form onsubmit="handleCategorySubmit(event)" class="space-y-3 mb-4">
                                 <input type="hidden" id="edit-cat-id" value="">
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Category Name</label>
-                                    <input type="text" id="category-name-input" required placeholder="e.g. Hot Drinks" 
-                                        class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500">
+                                    <label class="block text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Category Name</label>
+                                    <input type="text" id="category-name-input" required placeholder="e.g. Hot Beverages" 
+                                        class="w-full px-3 py-2 text-sm font-semibold border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-55 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all">
                                 </div>
-                                <div class="flex gap-1.5">
-                                    <button type="submit" id="cat-submit-btn" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white py-1.5 px-2 rounded-lg text-xs font-semibold">
-                                        Save
+                                <div class="flex gap-2">
+                                    <button type="submit" id="cat-submit-btn" class="flex-1 bg-slate-900 dark:bg-slate-800 hover:bg-slate-850 text-white dark:text-white py-2.5 px-3 rounded-xl text-xs font-black transition-all">
+                                        Save Category
                                     </button>
-                                    <button type="button" id="cat-cancel-btn" onclick="cancelCategoryEdit()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 py-1.5 px-2 rounded-lg text-xs font-semibold">
+                                    <button type="button" id="cat-cancel-btn" onclick="cancelCategoryEdit()" class="hidden bg-slate-100 dark:bg-slate-750 text-slate-600 dark:text-slate-300 py-2.5 px-3 rounded-xl text-xs font-black transition-all">
                                         Cancel
                                     </button>
                                 </div>
                             </form>
 
                             <!-- Live Categories Grid -->
-                            <div class="space-y-1.5 max-h-[220px] overflow-y-auto">
-                                <div id="settings-categories-list" class="space-y-1">
-                                    <!-- Loaded dynamically -->
+                            <div class="space-y-2 max-h-[350px] overflow-y-auto">
+                                <div id="settings-categories-list" class="space-y-1.5">
+                                    <!-- Dynamic -->
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Products Catalog Management Block -->
-                    <div class="md:col-span-2 space-y-4">
-                        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-                            <div class="flex items-center justify-between mb-4">
+                    <div class="lg:col-span-8 space-y-6">
+                        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm transition-colors duration-250">
+                            <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
                                 <div>
-                                    <h2 class="text-sm font-bold text-slate-900 flex items-center">
-                                        <i class="fa-solid fa-mug-hot text-brand-500 mr-2"></i>
-                                        Product Catalog
+                                    <h2 class="text-sm font-black text-slate-900 dark:text-white flex items-center uppercase tracking-wider">
+                                        <i class="fa-solid fa-mug-hot text-brand-500 mr-2.5"></i>
+                                        Products Directory
                                     </h2>
                                 </div>
-                                <button onclick="openProductModal()" class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold transition-all">
-                                    <i class="fa-solid fa-plus mr-1.5"></i> Add Product
+                                <button onclick="openProductModal()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-black transition-all shadow-sm">
+                                    <i class="fa-solid fa-plus mr-2"></i> Add Product Record
                                 </button>
                             </div>
 
-                            <!-- Products responsive catalog table -->
-                            <div class="overflow-x-auto border border-slate-100 rounded-xl">
-                                <table class="min-w-full divide-y divide-slate-200 text-left text-xs">
-                                    <thead class="bg-slate-50">
+                            <!-- Catalog responsive table -->
+                            <div class="overflow-x-auto border border-slate-100 dark:border-slate-800 rounded-xl">
+                                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-left text-xs">
+                                    <thead class="bg-slate-50 dark:bg-slate-850">
                                         <tr>
-                                            <th scope="col" class="px-4 py-2.5 font-bold text-slate-500">Name</th>
-                                            <th scope="col" class="px-4 py-2.5 font-bold text-slate-500">Category</th>
-                                            <th scope="col" class="px-4 py-2.5 font-bold text-slate-500">Price</th>
-                                            <th scope="col" class="px-4 py-2.5 font-bold text-slate-500 text-right">Actions</th>
+                                            <th scope="col" class="px-4 py-3 font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Name</th>
+                                            <th scope="col" class="px-4 py-3 font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                                            <th scope="col" class="px-4 py-3 font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Price (INR)</th>
+                                            <th scope="col" class="px-4 py-3 font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="settings-products-table" class="divide-y divide-slate-100 bg-white">
-                                        <!-- Dynamic rows -->
+                                    <tbody id="settings-products-table" class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                                        <!-- Loaded dynamically -->
                                     </tbody>
                                 </table>
                             </div>
@@ -286,148 +303,149 @@
         </div>
 
         <!-- ==================== TAB 3: REPORTS DASHBOARD ==================== -->
-        <div id="view-reports" class="tab-view hidden h-full overflow-y-auto bg-slate-50">
-            <div class="max-w-5xl mx-auto px-4 py-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+        <div id="view-reports" class="tab-view hidden h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 transition-colors duration-250">
+            <div class="max-w-6xl mx-auto px-4 py-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
-                        <h2 class="text-lg font-black text-slate-900 leading-none">Sales Analytics</h2>
-                        <p class="text-[10px] text-slate-400 mt-1">Review ledger data, export spreadsheets or reset databases</p>
+                        <h2 class="text-xl font-black text-slate-900 dark:text-white leading-none">Analytics Ledger</h2>
+                        <p class="text-xs text-slate-450 dark:text-slate-400 mt-1">Export transaction logs and monitor aggregate revenue timelines</p>
                     </div>
                     <div class="flex gap-2 w-full sm:w-auto">
-                        <button onclick="exportToExcel()" class="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-xs">
-                            <i class="fa-solid fa-file-excel mr-1.5"></i> Excel Export
+                        <button onclick="exportToExcel()" class="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-xs transition-all">
+                            <i class="fa-solid fa-file-excel mr-2 text-sm"></i> Download Excel
                         </button>
-                        <button onclick="clearAllTransactionsPrompt()" class="inline-flex items-center justify-center px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-lg border border-red-200">
-                            <i class="fa-regular fa-trash-can mr-1.5"></i> Reset
+                        <button onclick="clearAllTransactionsPrompt()" class="inline-flex items-center justify-center px-4 py-2.5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-black rounded-xl border border-red-200 dark:border-red-900/50 hover:bg-red-100 transition-all">
+                            <i class="fa-regular fa-trash-can mr-2"></i> Wipe Logs
                         </button>
                     </div>
                 </div>
 
-                <!-- Micro metrics layout -->
+                <!-- Aggregated Sales Timelines widgets -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-3xs">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Today's Sales</p>
-                        <h3 id="report-daily-revenue" class="text-xl font-black text-slate-900 mt-1">₹0.00</h3>
-                        <p id="report-daily-count" class="text-[9px] text-slate-400 mt-0.5">0 tickets processed</p>
+                    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs transition-colors duration-250">
+                        <p class="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Today's Sales</p>
+                        <h3 id="report-daily-revenue" class="text-2xl font-black text-slate-900 dark:text-white mt-1">₹0.00</h3>
+                        <p id="report-daily-count" class="text-xs text-slate-450 dark:text-slate-400 mt-0.5">0 tickets processed</p>
                     </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-3xs">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Weekly Sales (7D)</p>
-                        <h3 id="report-weekly-revenue" class="text-xl font-black text-slate-900 mt-1">₹0.00</h3>
-                        <p id="report-weekly-count" class="text-[9px] text-slate-400 mt-0.5">0 tickets processed</p>
+                    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs transition-colors duration-250">
+                        <p class="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Weekly Sales (7D)</p>
+                        <h3 id="report-weekly-revenue" class="text-2xl font-black text-slate-900 dark:text-white mt-1">₹0.00</h3>
+                        <p id="report-weekly-count" class="text-xs text-slate-450 dark:text-slate-400 mt-0.5">0 tickets processed</p>
                     </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-3xs">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Monthly Sales (30D)</p>
-                        <h3 id="report-monthly-revenue" class="text-xl font-black text-slate-900 mt-1">₹0.00</h3>
-                        <p id="report-monthly-count" class="text-[9px] text-slate-400 mt-0.5">0 tickets processed</p>
+                    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs transition-colors duration-250">
+                        <p class="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Monthly Sales (30D)</p>
+                        <h3 id="report-monthly-revenue" class="text-2xl font-black text-slate-900 dark:text-white mt-1">₹0.00</h3>
+                        <p id="report-monthly-count" class="text-xs text-slate-450 dark:text-slate-400 mt-0.5">0 tickets processed</p>
                     </div>
                 </div>
 
-                <!-- Sales Transactions Log -->
-                <div class="bg-white rounded-xl border border-slate-200 shadow-3xs p-4">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-                        <h3 class="text-xs font-bold text-slate-900">Historical Archives</h3>
-                        <input type="text" id="report-search" oninput="filterTransactions()" placeholder="Search receipts..." class="w-full sm:w-48 px-2 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500">
+                <!-- Transaction lists -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs transition-colors duration-250">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                        <h3 class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Transaction Archive Ledger</h3>
+                        <input type="text" id="report-search" oninput="filterTransactions()" placeholder="Search transactions..." class="w-full sm:w-56 px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 dark:text-white focus:outline-none transition-all">
                     </div>
 
-                    <div class="overflow-x-auto border border-slate-100 rounded-xl">
-                        <table class="min-w-full divide-y divide-slate-200 text-left text-xs">
-                            <thead class="bg-slate-50">
+                    <div class="overflow-x-auto border border-slate-100 dark:border-slate-800 rounded-xl">
+                        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-slate-850">
                                 <tr>
-                                    <th scope="col" class="px-4 py-2.5 font-bold text-slate-500">Receipt</th>
-                                    <th scope="col" class="px-4 py-2.5 font-bold text-slate-500">Date</th>
-                                    <th scope="col" class="px-4 py-2.5 font-bold text-slate-500">Details</th>
-                                    <th scope="col" class="px-4 py-2.5 font-bold text-slate-500 text-right">Bill</th>
-                                    <th scope="col" class="px-4 py-2.5 font-bold text-slate-500 text-center">Action</th>
+                                    <th scope="col" class="px-4 py-3 font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Receipt</th>
+                                    <th scope="col" class="px-4 py-3 font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                                    <th scope="col" class="px-4 py-3 font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Items Summary</th>
+                                    <th scope="col" class="px-4 py-3 font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Total (INR)</th>
+                                    <th scope="col" class="px-4 py-3 font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center font-bold">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="reports-transactions-table" class="divide-y divide-slate-100 bg-white">
-                                <!-- Dynamic entries -->
+                            <tbody id="reports-transactions-table" class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                                <!-- Loaded dynamically -->
                             </tbody>
                         </table>
                     </div>
-                    <div id="reports-empty-state" class="hidden flex-col items-center justify-center py-12 text-slate-400">
-                        <p class="text-xs font-semibold text-slate-500">No records filed yet</p>
+                    <div id="reports-empty-state" class="hidden flex-col items-center justify-center py-16 text-slate-400 dark:text-slate-500">
+                        <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-300"></i>
+                        <p class="text-xs font-bold">No registered sales records found</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ==================== TAB 4: THERMAL RECEIPT DESIGNER ==================== -->
-        <div id="view-designer" class="tab-view hidden h-full overflow-y-auto bg-slate-50">
-            <div class="max-w-5xl mx-auto px-4 py-6">
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+        <!-- ==================== TAB 4: RECEIPT DESIGNER ==================== -->
+        <div id="view-designer" class="tab-view hidden h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 transition-colors duration-250">
+            <div class="max-w-6xl mx-auto px-4 py-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     
-                    <!-- Designer Variables -->
-                    <div class="md:col-span-7 bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <!-- Settings inputs panel -->
+                    <div class="lg:col-span-7 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 transition-colors duration-250">
                         <div>
-                            <h2 class="text-sm font-bold text-slate-900 flex items-center">
-                                <i class="fa-solid fa-receipt text-brand-500 mr-2"></i>
-                                Thermal Layout Customizer
+                            <h2 class="text-sm font-black text-slate-900 dark:text-white flex items-center uppercase tracking-wider">
+                                <i class="fa-solid fa-receipt text-brand-500 mr-2.5"></i>
+                                Thermal Receipt customizer
                             </h2>
-                            <p class="text-[10px] text-slate-400 mt-0.5">Adapt print sizes and header settings for paper rolls</p>
+                            <p class="text-xs text-slate-450 dark:text-slate-400 mt-1">Configure parameters matching your Bluetooth or desktop paper dimensions</p>
                         </div>
 
-                        <!-- Brand Headers settings -->
-                        <div class="p-3 bg-slate-50 rounded-lg space-y-2">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <!-- Brand configurations options -->
+                        <div class="p-4 bg-slate-50 dark:bg-slate-850 rounded-xl space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div class="sm:col-span-2">
-                                    <label class="block text-[10px] text-slate-400">Logo Image URL (Optional - e.g. JPEG/PNG link)</label>
+                                    <label class="block text-[11px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-wider mb-1">Receipt Logo Image URL</label>
                                     <input type="text" id="designer-logo-url" oninput="updateDesignerPreview()" placeholder="https://placehold.co/100x100?text=Logo" 
-                                        class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500">
+                                        class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs bg-white dark:bg-slate-800 dark:text-white focus:outline-none transition-all">
                                 </div>
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="designer-show-logo" onchange="updateDesignerPreview()" checked class="rounded border-slate-300 text-brand-500">
-                                    <span class="text-[10px] font-bold text-slate-600">Render Header Logo</span>
+                                    <input type="checkbox" id="designer-show-logo" onchange="updateDesignerPreview()" checked class="w-4 h-4 rounded border-slate-300 text-brand-500 focus:ring-brand-500/50">
+                                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Show Header Logo</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="p-3 bg-slate-50 rounded-lg space-y-2">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div class="p-4 bg-slate-50 dark:bg-slate-850 rounded-xl space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-[10px] text-slate-400">Shop Title Name</label>
-                                    <input type="text" id="designer-shop-name" oninput="updateDesignerPreview()" value="CozyCup Cafe & Bistro" 
-                                        class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500">
+                                    <label class="block text-[11px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-wider mb-1">Shop Title Name</label>
+                                    <input type="text" id="designer-shop-name" oninput="updateDesignerPreview()" value="CHILL OUT CAFE & RESTAURANT" 
+                                        class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs bg-white dark:bg-slate-800 dark:text-white focus:outline-none transition-all">
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] text-slate-400">Slogan Description Tagline</label>
-                                    <input type="text" id="designer-shop-tagline" oninput="updateDesignerPreview()" value="Best Coffee in Town!" 
-                                        class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500">
+                                    <label class="block text-[11px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-wider mb-1">Tagline Slogan</label>
+                                    <input type="text" id="designer-shop-tagline" oninput="updateDesignerPreview()" value="REFRESHING & HEALTHY" 
+                                        class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs bg-white dark:bg-slate-800 dark:text-white focus:outline-none transition-all">
                                 </div>
                                 <div class="sm:col-span-2">
-                                    <label class="block text-[10px] text-slate-400">Address Information</label>
-                                    <input type="text" id="designer-shop-address" oninput="updateDesignerPreview()" value="Main Street, Suite 402, Bangalore" 
-                                        class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500">
+                                    <label class="block text-[11px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-wider mb-1">Address Details</label>
+                                    <input type="text" id="designer-shop-address" oninput="updateDesignerPreview()" value="Chill Out Cafe, Gudalur, TN" 
+                                        class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs bg-white dark:bg-slate-800 dark:text-white focus:outline-none transition-all">
                                 </div>
                                 <div class="sm:col-span-2">
-                                    <label class="block text-[10px] text-slate-400">Store Telephone</label>
+                                    <label class="block text-[11px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-wider mb-1">Store Phone</label>
                                     <input type="text" id="designer-shop-phone" oninput="updateDesignerPreview()" value="+91 9876543210" 
-                                        class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500">
+                                        class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs bg-white dark:bg-slate-800 dark:text-white focus:outline-none transition-all">
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Sizing and Dimensions -->
-                        <div class="p-3 bg-slate-50 rounded-lg space-y-2">
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <!-- Spacing parameters selection lists -->
+                        <div class="p-4 bg-slate-50 dark:bg-slate-850 rounded-xl space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div>
-                                    <label class="block text-[10px] text-slate-400">Paper Width</label>
-                                    <select id="designer-paper-width" onchange="updateDesignerPreview()" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500">
-                                        <option value="58mm">58mm (Small Thermal)</option>
+                                    <label class="block text-[11px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-wider mb-1">Paper Roll Width</label>
+                                    <select id="designer-paper-width" onchange="updateDesignerPreview()" class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs bg-white dark:bg-slate-800 dark:text-white focus:outline-none transition-all">
+                                        <option value="58mm">58mm (Small Bluetooth)</option>
                                         <option value="80mm">80mm (Standard Desktop)</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] text-slate-400">Print Font Size</label>
-                                    <select id="designer-font-size" onchange="updateDesignerPreview()" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500">
+                                    <label class="block text-[11px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-wider mb-1">Print Font Size</label>
+                                    <select id="designer-font-size" onchange="updateDesignerPreview()" class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs bg-white dark:bg-slate-800 dark:text-white focus:outline-none transition-all">
                                         <option value="11px">Compact (11px)</option>
                                         <option value="12px" selected>Normal (12px)</option>
-                                        <option value="13px">Slightly Large (13px)</option>
+                                        <option value="14px">Large (14px)</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] text-slate-400">Line Spacing</label>
-                                    <select id="designer-line-height" onchange="updateDesignerPreview()" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500">
+                                    <label class="block text-[11px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-wider mb-1">Line Height</label>
+                                    <select id="designer-line-height" onchange="updateDesignerPreview()" class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs bg-white dark:bg-slate-800 dark:text-white focus:outline-none transition-all">
                                         <option value="1.2">Compact (1.2)</option>
                                         <option value="1.4" selected>Default (1.4)</option>
                                     </select>
@@ -435,37 +453,37 @@
                             </div>
                         </div>
 
-                        <div class="p-3 bg-slate-50 rounded-lg space-y-2">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div class="p-4 bg-slate-50 dark:bg-slate-850 rounded-xl space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div class="sm:col-span-2">
-                                    <label class="block text-[10px] text-slate-400">Bottom Receipt Message</label>
-                                    <input type="text" id="designer-shop-footer" oninput="updateDesignerPreview()" value="Thank you for your visit! Come back soon." 
-                                        class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500">
+                                    <label class="block text-[11px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-wider mb-1">Bottom Footer message</label>
+                                    <input type="text" id="designer-shop-footer" oninput="updateDesignerPreview()" value="Thank you! Visit again." 
+                                        class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs bg-white dark:bg-slate-800 dark:text-white focus:outline-none transition-all">
                                 </div>
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="designer-show-barcode" onchange="updateDesignerPreview()" checked class="rounded border-slate-300 text-brand-500">
-                                    <span class="text-[10px] font-bold text-slate-600">Print Scan Barcode Lines</span>
+                                    <input type="checkbox" id="designer-show-barcode" onchange="updateDesignerPreview()" checked class="w-4 h-4 rounded border-slate-300 text-brand-500 focus:ring-brand-500/50">
+                                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Render Barcode Strip</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="designer-show-cashier" onchange="updateDesignerPreview()" checked class="rounded border-slate-300 text-brand-500">
-                                    <span class="text-[10px] font-bold text-slate-600">Show Sales Agent Detail</span>
+                                    <input type="checkbox" id="designer-show-cashier" onchange="updateDesignerPreview()" checked class="w-4 h-4 rounded border-slate-300 text-brand-500 focus:ring-brand-500/50">
+                                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Show Clerk Stamp</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex justify-end pt-2">
-                            <button onclick="saveTemplateDesign()" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-4 py-2 rounded-lg text-xs transition-all">
-                                <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Save Layout Variables
+                            <button onclick="saveTemplateDesign()" class="bg-brand-500 hover:bg-brand-600 text-white font-black px-5 py-3 rounded-xl text-xs transition-all shadow-md">
+                                <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Save Print Variables
                             </button>
                         </div>
                     </div>
 
-                    <!-- Simulator Mockup rendering -->
-                    <div class="md:col-span-5 flex flex-col items-center">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Thermal Preview Simulation</span>
-                        <div class="relative w-full max-w-[260px] transition-all duration-200" id="preview-width-wrapper">
-                            <div class="thermal-paper px-4 py-6 thermal-font text-slate-900 border border-slate-200 rounded-sm select-none" id="thermal-receipt-preview">
-                                <!-- Simulator renders dynamically here -->
+                    <!-- Print simulator -->
+                    <div class="lg:col-span-5 flex flex-col items-center">
+                        <span class="text-[11px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-wider block mb-3">Live Receipt Simulation</span>
+                        <div class="relative w-full max-w-[280px] transition-all duration-200" id="preview-width-wrapper">
+                            <div class="thermal-paper px-4 py-6 thermal-font text-slate-900 border border-slate-200 rounded shadow-lg select-none" id="thermal-receipt-preview">
+                                <!-- Simulated inside layout -->
                             </div>
                         </div>
                     </div>
@@ -476,49 +494,49 @@
 
     </main>
 
-    <!-- ==================== POPUP OVERLAYS & MODALS ==================== -->
-    <!-- Product Catalog Editor Dialog -->
-    <div id="product-modal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- ==================== POPUP DIALOG OVERLAYS ==================== -->
+    <!-- Product Catalog Edit / Add Modal -->
+    <div id="product-modal" class="hidden fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity" onclick="closeProductModal()"></div>
+            <div class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity" onclick="closeProductModal()"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+            <div class="inline-block align-bottom bg-white dark:bg-slate-900 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border dark:border-slate-850">
                 <form onsubmit="handleProductSubmit(event)">
                     <input type="hidden" id="edit-prod-id" value="">
-                    <div class="bg-white px-5 pt-5 pb-4">
-                        <div class="flex justify-between items-center pb-3 border-b border-slate-100">
-                            <h3 class="text-sm font-bold text-slate-900" id="product-modal-title">Product details</h3>
-                            <button type="button" onclick="closeProductModal()" class="text-slate-400 hover:text-slate-600">
-                                <i class="fa-solid fa-xmark"></i>
+                    <div class="bg-white dark:bg-slate-900 px-6 pt-6 pb-5">
+                        <div class="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-800">
+                            <h3 class="text-base font-black text-slate-900 dark:text-white" id="product-modal-title">Product variables</h3>
+                            <button type="button" onclick="closeProductModal()" class="text-slate-400 hover:text-slate-600 dark:text-slate-500">
+                                <i class="fa-solid fa-xmark text-lg"></i>
                             </button>
                         </div>
 
-                        <div class="mt-3 space-y-3 text-xs">
+                        <div class="mt-4 space-y-4 text-xs">
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Product Name *</label>
-                                <input type="text" id="product-name" required placeholder="e.g. Mocha Cookie Ice" 
-                                    class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500">
+                                <label class="block text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Product Title *</label>
+                                <input type="text" id="product-name" required placeholder="e.g. Avocado Milkshake" 
+                                    class="w-full px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold bg-slate-50 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all">
                             </div>
 
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Category Assigned *</label>
-                                    <select id="product-category" required class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500">
-                                        <!-- Categories load -->
+                                    <label class="block text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Assign Category *</label>
+                                    <select id="product-category" required class="w-full px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold bg-slate-50 dark:bg-slate-800 dark:text-white focus:outline-none transition-all">
+                                        <!-- Category Options loaded dynamically -->
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Unit Price (INR) *</label>
+                                    <label class="block text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Unit Price (INR) *</label>
                                     <input type="number" id="product-price" step="0.01" min="0" required placeholder="0.00" 
-                                        class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500">
+                                        class="w-full px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold bg-slate-50 dark:bg-slate-800 dark:text-white focus:outline-none transition-all">
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-lg">
+                            <div class="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-850 rounded-xl">
                                 <div>
-                                    <label class="block text-[10px] text-slate-500">Theme Card Color</label>
-                                    <select id="product-color" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500 bg-white">
-                                        <option value="amber">Coffee Amber</option>
+                                    <label class="block text-[11px] text-slate-400 dark:text-slate-500 mb-1">Visual Theme Color</label>
+                                    <select id="product-color" class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs bg-white dark:bg-slate-800 dark:text-white focus:outline-none transition-all">
+                                        <option value="amber">Warm Amber</option>
                                         <option value="rose">Soft Rose</option>
                                         <option value="emerald">Herbal Emerald</option>
                                         <option value="blue">Lagoon Blue</option>
@@ -526,18 +544,18 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] text-slate-500">Thumbnail Image URL</label>
-                                    <input type="text" id="product-image" placeholder="Leave empty for generic ☕ icon" 
-                                        class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-brand-500 bg-white">
+                                    <label class="block text-[11px] text-slate-400 dark:text-slate-500 mb-1">Thumbnail image Link</label>
+                                    <input type="text" id="product-image" placeholder="Image URL (Optional)" 
+                                        class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs bg-white dark:bg-slate-800 dark:text-white focus:outline-none transition-all">
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-slate-50 px-5 py-3 sm:flex sm:flex-row-reverse">
-                        <button type="submit" class="w-full sm:w-auto inline-flex justify-center rounded-lg px-4 py-2 bg-brand-500 text-white hover:bg-brand-600 text-xs font-semibold sm:ml-2">
+                    <div class="bg-slate-50 dark:bg-slate-850/50 px-6 py-4 sm:flex sm:flex-row-reverse gap-2">
+                        <button type="submit" class="w-full sm:w-auto inline-flex justify-center rounded-xl px-5 py-2.5 bg-brand-500 text-white hover:bg-brand-600 text-xs font-black shadow-sm">
                             Save Product
                         </button>
-                        <button type="button" onclick="closeProductModal()" class="mt-2 sm:mt-0 w-full sm:w-auto inline-flex justify-center rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                        <button type="button" onclick="closeProductModal()" class="mt-2 sm:mt-0 w-full sm:w-auto inline-flex justify-center rounded-xl border border-slate-200 dark:border-slate-700 px-5 py-2.5 bg-white dark:bg-slate-800 text-xs font-black text-slate-700 dark:text-slate-350 hover:bg-slate-100 transition-all">
                             Cancel
                         </button>
                     </div>
@@ -546,57 +564,59 @@
         </div>
     </div>
 
-    <!-- Alert Dialog modal replacement -->
+    <!-- System Notification Modals -->
     <div id="alert-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs" onclick="closeAlert()"></div>
-        <div class="bg-white rounded-xl max-w-xs w-full p-5 shadow-2xl border border-slate-100 relative z-10">
-            <div class="flex items-center space-x-2 text-brand-500 mb-3" id="alert-icon-wrapper">
-                <i class="fa-solid fa-circle-check text-lg" id="alert-icon"></i>
-                <h3 class="text-xs font-bold text-slate-900" id="alert-title">Notification</h3>
+        <div class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs" onclick="closeAlert()"></div>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-150 dark:border-slate-850 relative z-10 transition-colors duration-250">
+            <div class="flex items-center space-x-3 text-brand-500 mb-3" id="alert-icon-wrapper">
+                <i class="fa-solid fa-circle-check text-2xl" id="alert-icon"></i>
+                <h3 class="text-sm font-black text-slate-900 dark:text-white" id="alert-title">Notification</h3>
             </div>
-            <p class="text-slate-600 text-xs mb-4" id="alert-message">Done</p>
+            <p class="text-slate-600 dark:text-slate-300 text-xs leading-relaxed mb-5" id="alert-message">Action Complete</p>
             <div class="flex justify-end">
-                <button onclick="closeAlert()" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-4 py-1.5 rounded-lg">Dismiss</button>
+                <button onclick="closeAlert()" class="bg-slate-900 dark:bg-slate-850 hover:bg-slate-800 dark:hover:bg-slate-750 text-white font-black text-xs px-5 py-2.5 rounded-xl transition-all">Dismiss</button>
             </div>
         </div>
     </div>
 
-    <!-- Print Confirmation safeguards panel -->
+    <!-- Safe-Check printer validation overlays -->
     <div id="print-confirm-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs" onclick="closePrintConfirm(false)"></div>
-        <div class="bg-white rounded-xl max-w-xs w-full p-5 shadow-2xl border border-slate-100 relative z-10">
-            <div class="flex items-center space-x-2 text-brand-500 mb-3">
-                <i class="fa-solid fa-print text-lg"></i>
-                <h3 class="text-xs font-bold text-slate-900">Did the ticket print?</h3>
+        <div class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs" onclick="closePrintConfirm(false)"></div>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-150 dark:border-slate-850 relative z-10 transition-colors duration-250">
+            <div class="flex items-center space-x-3 text-brand-500 mb-3">
+                <i class="fa-solid fa-print text-2xl animate-pulse"></i>
+                <h3 class="text-sm font-black text-slate-900 dark:text-white">Did the receipt print?</h3>
             </div>
-            <p class="text-slate-500 text-[11px] leading-relaxed mb-4">Clicking <strong class="text-slate-900">"Yes, Clear Cart"</strong> files the invoice to logs and wipes the interface. If you ran out of paper or had a bluetooth disconnect, select <strong class="text-slate-900">"No, Keep Cart"</strong>.</p>
-            <div class="flex justify-end space-x-1.5">
-                <button onclick="closePrintConfirm(false)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[10px] px-3 py-2 rounded-lg">No, Keep Cart</button>
-                <button onclick="closePrintConfirm(true)" class="bg-brand-500 hover:bg-brand-600 text-white font-bold text-[10px] px-3 py-2 rounded-lg">Yes, Clear Cart</button>
+            <p class="text-slate-500 dark:text-slate-450 text-[11px] leading-relaxed mb-5">
+                Clicking <strong class="text-slate-900 dark:text-white">"Yes, Clear Cart"</strong> saves the order and resets the checkout area. Select <strong class="text-slate-900 dark:text-white">"No, Keep Cart"</strong> if you had a paper jam or printer disconnect.
+            </p>
+            <div class="flex justify-end space-x-2">
+                <button onclick="closePrintConfirm(false)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-extrabold text-[10px] px-4 py-2.5 rounded-xl transition-all">No, Keep Cart</button>
+                <button onclick="closePrintConfirm(true)" class="bg-brand-500 hover:bg-brand-600 text-white font-black text-[10px] px-4 py-2.5 rounded-xl transition-all shadow-sm">Yes, Clear Cart</button>
             </div>
         </div>
     </div>
 
-    <!-- Confirm dialog replacement -->
+    <!-- Interactive action confirmation dialogue triggers -->
     <div id="confirm-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs" onclick="closeConfirm(false)"></div>
-        <div class="bg-white rounded-xl max-w-xs w-full p-5 shadow-2xl border border-slate-100 relative z-10">
-            <div class="flex items-center space-x-2 text-red-500 mb-3">
-                <i class="fa-solid fa-triangle-exclamation text-lg"></i>
-                <h3 class="text-xs font-bold text-slate-900">Confirm operation</h3>
+        <div class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs" onclick="closeConfirm(false)"></div>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-150 dark:border-slate-850 relative z-10 transition-colors duration-250">
+            <div class="flex items-center space-x-3 text-red-500 mb-3">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                <h3 class="text-sm font-black text-slate-900 dark:text-white">Are you sure?</h3>
             </div>
-            <p class="text-slate-600 text-xs mb-4" id="confirm-message">This action is permanent.</p>
-            <div class="flex justify-end space-x-1.5">
-                <button onclick="closeConfirm(false)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-3 py-1.5 rounded-lg">Cancel</button>
-                <button onclick="closeConfirm(true)" class="bg-red-500 hover:bg-red-600 text-white font-semibold text-xs px-3 py-1.5 rounded-lg">Proceed</button>
+            <p class="text-slate-600 dark:text-slate-350 text-xs mb-5" id="confirm-message">This action cannot be undone.</p>
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeConfirm(false)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-extrabold text-xs px-4 py-2.5 rounded-xl transition-all">Cancel</button>
+                <button onclick="closeConfirm(true)" class="bg-red-500 hover:bg-red-600 text-white font-black text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm">Proceed</button>
             </div>
         </div>
     </div>
 
-    <!-- Print driver target iframe container -->
+    <!-- Clean sandboxed thermal printing frame container -->
     <iframe id="print-iframe" class="hidden" style="width: 0px; height: 0px; position: absolute; left: -9999px;"></iframe>
 
-    <!-- ==================== CORE CONTROLLERS & LOGIC SCRIPTS ==================== -->
+    <!-- ==================== CORE SYSTEM ACTIONS SCRIPTS ==================== -->
     <script>
         let categories = [];
         let products = [];
@@ -608,47 +628,193 @@
         let pendingTxRecord = null;
         let confirmResolve = null;
 
-        // Static fallback setups
+        // Structured seed configuration based strictly on Chill Out Cafe's extracted menu pages
         const defaultCategories = [
-            { id: "cat-1", name: "Hot Coffees" },
-            { id: "cat-2", name: "Cold Brews" },
-            { id: "cat-3", name: "Teas & Infusions" },
-            { id: "cat-4", name: "Bakery & Treats" }
+            { id: "cat-bev", name: "Hot Beverages" },
+            { id: "cat-bites", name: "Quick Bites" },
+            { id: "cat-juice", name: "Fresh Juice" },
+            { id: "cat-fruit-shake", name: "Fruit Milkshakes" },
+            { id: "cat-cocktail", name: "Cocktails" },
+            { id: "cat-shakes", name: "Milkshakes & Special Shakes" },
+            { id: "cat-soda", name: "Sodas" },
+            { id: "cat-mock", name: "Mocktails" },
+            { id: "cat-soup", name: "Soups" },
+            { id: "cat-specials", name: "Chill Out Specials" },
+            { id: "cat-chats", name: "Chats (After 3 PM)" },
+            { id: "cat-biriyani", name: "Biriyani" },
+            { id: "cat-main", name: "Main Course" },
+            { id: "cat-alfaham", name: "Al-Faham & Mandi" },
+            { id: "cat-falooda", name: "Faloodas" }
         ];
 
         const defaultProducts = [
-            { id: "prod-1", name: "Espresso Single", categoryId: "cat-1", price: 120.00, color: "slate", image: "" },
-            { id: "prod-2", name: "Classic Cappuccino", categoryId: "cat-1", price: 180.00, color: "amber", image: "" },
-            { id: "prod-3", name: "Hazelnut Latte", categoryId: "cat-1", price: 210.00, color: "amber", image: "" },
-            { id: "prod-4", name: "Cold Brew Classic", categoryId: "cat-2", price: 160.00, color: "slate", image: "" },
-            { id: "prod-5", name: "Iced Caramel Mocha", categoryId: "cat-2", price: 240.00, color: "rose", image: "" },
-            { id: "prod-6", name: "Matcha Latte", categoryId: "cat-3", price: 220.00, color: "emerald", image: "" },
-            { id: "prod-7", name: "Earl Grey Premium", categoryId: "cat-3", price: 140.00, color: "emerald", image: "" },
-            { id: "prod-8", name: "Butter Croissant", categoryId: "cat-4", price: 150.00, color: "rose", image: "" },
-            { id: "prod-9", name: "Chocolate Brownie", categoryId: "cat-4", price: 130.00, color: "rose", image: "" }
+            // Hot Beverages (Page 1)
+            { id: "p-bev-1", name: "Tea", categoryId: "cat-bev", price: 12.00, color: "amber", image: "" },
+            { id: "p-bev-2", name: "Coffee", categoryId: "cat-bev", price: 15.00, color: "amber", image: "" },
+            { id: "p-bev-3", name: "Horlicks", categoryId: "cat-bev", price: 15.00, color: "amber", image: "" },
+            { id: "p-bev-4", name: "Boost", categoryId: "cat-bev", price: 15.00, color: "amber", image: "" },
+            { id: "p-bev-5", name: "Badam Milk", categoryId: "cat-bev", price: 15.00, color: "amber", image: "" },
+            { id: "p-bev-6", name: "Avil Milk Sp", categoryId: "cat-bev", price: 60.00, color: "amber", image: "" },
+
+            // Quick Bites (Page 1)
+            { id: "p-bit-1", name: "French Fries", categoryId: "cat-bites", price: 50.00, color: "rose", image: "" },
+            { id: "p-bit-2", name: "Bread Omelet Sp", categoryId: "cat-bites", price: 60.00, color: "rose", image: "" },
+            { id: "p-bit-3", name: "Chicken Burger", categoryId: "cat-bites", price: 90.00, color: "rose", image: "" },
+            { id: "p-bit-4", name: "Chicken Sandwich (Sp)", categoryId: "cat-bites", price: 70.00, color: "rose", image: "" },
+            { id: "p-bit-5", name: "Chicken Sandwich", categoryId: "cat-bites", price: 50.00, color: "rose", image: "" },
+            { id: "p-bit-6", name: "Chicken Nuggets", categoryId: "cat-bites", price: 90.00, color: "rose", image: "" },
+
+            // Fresh Juice (Page 2)
+            { id: "p-juc-1", name: "Pineapple Juice", categoryId: "cat-juice", price: 50.00, color: "emerald", image: "" },
+            { id: "p-juc-2", name: "Orange Juice", categoryId: "cat-juice", price: 50.00, color: "emerald", image: "" },
+            { id: "p-juc-3", name: "Grape Juice", categoryId: "cat-juice", price: 50.00, color: "emerald", image: "" },
+            { id: "p-juc-4", name: "Apple Juice", categoryId: "cat-juice", price: 50.00, color: "emerald", image: "" },
+            { id: "p-juc-5", name: "Mosambi Juice", categoryId: "cat-juice", price: 50.00, color: "emerald", image: "" },
+            { id: "p-juc-6", name: "Sugarcane Juice", categoryId: "cat-juice", price: 30.00, color: "emerald", image: "" },
+            { id: "p-juc-7", name: "Lemon Juice", categoryId: "cat-juice", price: 20.00, color: "emerald", image: "" },
+            { id: "p-juc-8", name: "Litchi Lime", categoryId: "cat-juice", price: 30.00, color: "emerald", image: "" },
+            { id: "p-juc-9", name: "Blueberry Lime", categoryId: "cat-juice", price: 30.00, color: "emerald", image: "" },
+            { id: "p-juc-10", name: "Mint Lime", categoryId: "cat-juice", price: 30.00, color: "emerald", image: "" },
+            { id: "p-juc-11", name: "Lassi (Plain)", categoryId: "cat-juice", price: 30.00, color: "emerald", image: "" },
+            { id: "p-juc-12", name: "Lassi (Flavoured)", categoryId: "cat-juice", price: 40.00, color: "emerald", image: "" },
+
+            // Fruit Milkshakes (Page 2)
+            { id: "p-frs-1", name: "Apple Milkshake", categoryId: "cat-fruit-shake", price: 70.00, color: "blue", image: "" },
+            { id: "p-frs-2", name: "Avocado Milkshake", categoryId: "cat-fruit-shake", price: 70.00, color: "blue", image: "" },
+            { id: "p-frs-3", name: "Jack Fruit Milkshake", categoryId: "cat-fruit-shake", price: 70.00, color: "blue", image: "" },
+            { id: "p-frs-4", name: "Chikku Milkshake", categoryId: "cat-fruit-shake", price: 70.00, color: "blue", image: "" },
+            { id: "p-frs-5", name: "Dragon Fruit Milkshake", categoryId: "cat-fruit-shake", price: 70.00, color: "blue", image: "" },
+            { id: "p-frs-6", name: "Mango Milkshake", categoryId: "cat-fruit-shake", price: 70.00, color: "blue", image: "" },
+
+            // Cocktails (Page 3)
+            { id: "p-cok-1", name: "Virgin Mojito", categoryId: "cat-cocktail", price: 120.00, color: "slate", image: "" },
+            { id: "p-cok-2", name: "Citrus Sparkler", categoryId: "cat-cocktail", price: 125.00, color: "slate", image: "" },
+            { id: "p-cok-3", name: "Ginger Lemon Fizz", categoryId: "cat-cocktail", price: 125.00, color: "slate", image: "" },
+            { id: "p-cok-4", name: "Orange Basil Cooler", categoryId: "cat-cocktail", price: 120.00, color: "slate", image: "" },
+            { id: "p-cok-5", name: "Strawberry Breeze", categoryId: "cat-cocktail", price: 130.00, color: "slate", image: "" },
+
+            // Shakes (Page 4)
+            { id: "p-shk-1", name: "Oreo Milkshake", categoryId: "cat-shakes", price: 70.00, color: "blue", image: "" },
+            { id: "p-shk-2", name: "Kitkat Milkshake", categoryId: "cat-shakes", price: 70.00, color: "blue", image: "" },
+            { id: "p-shk-3", name: "Dairy Milkshake", categoryId: "cat-shakes", price: 70.00, color: "blue", image: "" },
+            { id: "p-shk-4", name: "Sharjah Shake", categoryId: "cat-shakes", price: 70.00, color: "blue", image: "" },
+            { id: "p-shk-5", name: "Butter Scotch Shake", categoryId: "cat-shakes", price: 70.00, color: "blue", image: "" },
+            { id: "p-shk-6", name: "Choco Boost Shake", categoryId: "cat-shakes", price: 70.00, color: "blue", image: "" },
+            { id: "p-shk-7", name: "Raspberry Milkshake", categoryId: "cat-shakes", price: 70.00, color: "blue", image: "" },
+            { id: "p-shk-8", name: "Tender Mango Shake", categoryId: "cat-shakes", price: 70.00, color: "blue", image: "" },
+            { id: "p-shk-9", name: "Twister Sp (Str, Ban, App)", categoryId: "cat-shakes", price: 80.00, color: "blue", image: "" },
+            { id: "p-shk-10", name: "Blackcurrant Shake", categoryId: "cat-shakes", price: 70.00, color: "blue", image: "" },
+            { id: "p-shk-11", name: "Blueberry Shake", categoryId: "cat-shakes", price: 70.00, color: "blue", image: "" },
+            { id: "p-shk-12", name: "Tender Coconut Shake", categoryId: "cat-shakes", price: 70.00, color: "blue", image: "" },
+            { id: "p-shk-13", name: "Extra Ice Scoop", categoryId: "cat-shakes", price: 10.00, color: "blue", image: "" },
+
+            // Sodas (Page 4)
+            { id: "p-sda-1", name: "Lime Soda", categoryId: "cat-soda", price: 20.00, color: "amber", image: "" },
+            { id: "p-sda-2", name: "Ginger Soda", categoryId: "cat-soda", price: 25.00, color: "amber", image: "" },
+            { id: "p-sda-3", name: "Chilly Soda", categoryId: "cat-soda", price: 25.00, color: "amber", image: "" },
+            { id: "p-sda-4", name: "Jeera Soda", categoryId: "cat-soda", price: 25.00, color: "amber", image: "" },
+
+            // Mocktails (Page 5)
+            { id: "p-mok-1", name: "Wild Blueberry", categoryId: "cat-mock", price: 60.00, color: "rose", image: "" },
+            { id: "p-mok-2", name: "Blue Lagoon", categoryId: "cat-mock", price: 60.00, color: "rose", image: "" },
+            { id: "p-mok-3", name: "Limette Mocktail", categoryId: "cat-mock", price: 60.00, color: "rose", image: "" },
+            { id: "p-mok-4", name: "Strawberry Mocktail", categoryId: "cat-mock", price: 60.00, color: "rose", image: "" },
+            { id: "p-mok-5", name: "Green Apple Mocktail", categoryId: "cat-mock", price: 60.00, color: "rose", image: "" },
+            { id: "p-mok-6", name: "Lime & Mint Mocktail", categoryId: "cat-mock", price: 60.00, color: "rose", image: "" },
+            { id: "p-mok-7", name: "Pineapple Mocktail", categoryId: "cat-mock", price: 60.00, color: "rose", image: "" },
+            { id: "p-mok-8", name: "Passionfruit Mocktail", categoryId: "cat-mock", price: 60.00, color: "rose", image: "" },
+            { id: "p-mok-9", name: "Raspberry Mocktail", categoryId: "cat-mock", price: 60.00, color: "rose", image: "" },
+            { id: "p-mok-10", name: "Black Forest Mocktail", categoryId: "cat-mock", price: 60.00, color: "rose", image: "" },
+
+            // Soups (Page 5)
+            { id: "p-sop-1", name: "Tomato Soup", categoryId: "cat-soup", price: 60.00, color: "emerald", image: "" },
+            { id: "p-sop-2", name: "Sweet Corn Soup", categoryId: "cat-soup", price: 60.00, color: "emerald", image: "" },
+            { id: "p-sop-3", name: "Chicken Soup", categoryId: "cat-soup", price: 60.00, color: "emerald", image: "" },
+            { id: "p-sop-4", name: "Mutton Soup", categoryId: "cat-soup", price: 60.00, color: "emerald", image: "" },
+
+            // Chill Out Specials (Page 6 & 7)
+            { id: "p-spc-1", name: "Chicken Momos (8 Pcs)", categoryId: "cat-specials", price: 130.00, color: "slate", image: "" },
+            { id: "p-spc-2", name: "Chicken Momos (4 Pcs)", categoryId: "cat-specials", price: 70.00, color: "slate", image: "" },
+            { id: "p-spc-3", name: "Schezwan Momos (8 Pcs)", categoryId: "cat-specials", price: 150.00, color: "slate", image: "" },
+            { id: "p-spc-4", name: "Chilli Parotta Egg", categoryId: "cat-specials", price: 100.00, color: "slate", image: "" },
+            { id: "p-spc-5", name: "Chilli Parotta Chicken", categoryId: "cat-specials", price: 120.00, color: "slate", image: "" },
+            { id: "p-spc-6", name: "Broast Strips", categoryId: "cat-specials", price: 150.00, color: "slate", image: "" },
+            { id: "p-spc-7", name: "Loaded Fries", categoryId: "cat-specials", price: 150.00, color: "slate", image: "" },
+            { id: "p-spc-8", name: "Chicken Wrap", categoryId: "cat-specials", price: 70.00, color: "slate", image: "" },
+
+            // Chats (Page 6 & 7)
+            { id: "p-cht-1", name: "Pani Puri", categoryId: "cat-chats", price: 50.00, color: "amber", image: "" },
+            { id: "p-cht-2", name: "Soya Chat", categoryId: "cat-chats", price: 50.00, color: "amber", image: "" },
+            { id: "p-cht-3", name: "Masala Puri", categoryId: "cat-chats", price: 50.00, color: "amber", image: "" },
+            { id: "p-cht-4", name: "Dahi Puri", categoryId: "cat-chats", price: 50.00, color: "amber", image: "" },
+            { id: "p-cht-5", name: "Cauliflower Chat", categoryId: "cat-chats", price: 50.00, color: "amber", image: "" },
+            { id: "p-cht-6", name: "Mixing Chat", categoryId: "cat-chats", price: 50.00, color: "amber", image: "" },
+
+            // Biriyani (Page 8)
+            { id: "p-bir-1", name: "Chicken Biriyani Full", categoryId: "cat-biriyani", price: 120.00, color: "rose", image: "" },
+            { id: "p-bir-2", name: "Chicken Biriyani Half", categoryId: "cat-biriyani", price: 80.00, color: "rose", image: "" },
+            { id: "p-bir-3", name: "Chicken Biriyani Half With Egg", categoryId: "cat-biriyani", price: 90.00, color: "rose", image: "" },
+            { id: "p-bir-4", name: "Kuska", categoryId: "cat-biriyani", price: 70.00, color: "rose", image: "" },
+            { id: "p-bir-5", name: "Chicken 65 Full", categoryId: "cat-biriyani", price: 200.00, color: "rose", image: "" },
+            { id: "p-bir-6", name: "Chicken 65 Half", categoryId: "cat-biriyani", price: 140.00, color: "rose", image: "" },
+            { id: "p-bir-7", name: "Chicken 65 Quarter", categoryId: "cat-biriyani", price: 80.00, color: "rose", image: "" },
+
+            // Main Course (Page 8)
+            { id: "p-men-1", name: "Chicken Fried Rice Full", categoryId: "cat-main", price: 110.00, color: "emerald", image: "" },
+            { id: "p-men-2", name: "Chicken Noodles", categoryId: "cat-main", price: 110.00, color: "emerald", image: "" },
+            { id: "p-men-3", name: "Egg Fried Rice", categoryId: "cat-main", price: 80.00, color: "emerald", image: "" },
+            { id: "p-men-4", name: "Egg Noodles", categoryId: "cat-main", price: 80.00, color: "emerald", image: "" },
+            { id: "p-men-5", name: "Veg Fried Rice", categoryId: "cat-main", price: 90.00, color: "emerald", image: "" },
+            { id: "p-men-6", name: "Veg Noodles", categoryId: "cat-main", price: 90.00, color: "emerald", image: "" },
+            { id: "p-men-7", name: "Schezwan Noodles", categoryId: "cat-main", price: 120.00, color: "emerald", image: "" },
+
+            // Al-Faham & Mandi (Page 9)
+            { id: "p-alf-1", name: "Al-Faham Normal Full", categoryId: "cat-alfaham", price: 450.00, color: "slate", image: "" },
+            { id: "p-alf-2", name: "Al-Faham Normal Half", categoryId: "cat-alfaham", price: 250.00, color: "slate", image: "" },
+            { id: "p-alf-3", name: "Al-Faham Normal Quarter", categoryId: "cat-alfaham", price: 130.00, color: "slate", image: "" },
+            { id: "p-alf-4", name: "Al-Faham Peri Peri Full", categoryId: "cat-alfaham", price: 480.00, color: "slate", image: "" },
+            { id: "p-alf-5", name: "Al-Faham Peri Peri Half", categoryId: "cat-alfaham", price: 260.00, color: "slate", image: "" },
+            { id: "p-alf-6", name: "Al-Faham Peri Peri Quarter", categoryId: "cat-alfaham", price: 135.00, color: "slate", image: "" },
+            { id: "p-alf-7", name: "Al-Faham Kanthari Full", categoryId: "cat-alfaham", price: 480.00, color: "slate", image: "" },
+            { id: "p-alf-8", name: "Al-Faham Kanthari Half", categoryId: "cat-alfaham", price: 260.00, color: "slate", image: "" },
+            { id: "p-alf-9", name: "Al-Faham Kanthari Quarter", categoryId: "cat-alfaham", price: 135.00, color: "slate", image: "" },
+            { id: "p-alf-10", name: "Al-Faham Mandi Normal Full", categoryId: "cat-alfaham", price: 750.00, color: "slate", image: "" },
+            { id: "p-alf-11", name: "Al-Faham Mandi Normal Half", categoryId: "cat-alfaham", price: 400.00, color: "slate", image: "" },
+            { id: "p-alf-12", name: "Al-Faham Mandi Normal Quarter", categoryId: "cat-alfaham", price: 200.00, color: "slate", image: "" },
+            { id: "p-alf-13", name: "Al-Faham Mandi Peri Peri Full", categoryId: "cat-alfaham", price: 800.00, color: "slate", image: "" },
+            { id: "p-alf-14", name: "Al-Faham Mandi Peri Peri Half", categoryId: "cat-alfaham", price: 420.00, color: "slate", image: "" },
+            { id: "p-alf-15", name: "Al-Faham Mandi Peri Peri Quarter", categoryId: "cat-alfaham", price: 200.00, color: "slate", image: "" },
+            { id: "p-alf-16", name: "Al-Faham Mandi Kanthari Full", categoryId: "cat-alfaham", price: 800.00, color: "slate", image: "" },
+            { id: "p-alf-17", name: "Al-Faham Mandi Kanthari Half", categoryId: "cat-alfaham", price: 420.00, color: "slate", image: "" },
+            { id: "p-alf-18", name: "Al-Faham Mandi Kanthari Quarter", categoryId: "cat-alfaham", price: 210.00, color: "slate", image: "" },
+
+            // Faloodas (Page 9)
+            { id: "p-fal-1", name: "Royal Falooda", categoryId: "cat-falooda", price: 120.00, color: "blue", image: "" },
+            { id: "p-fal-2", name: "Regular Falooda", categoryId: "cat-falooda", price: 90.00, color: "blue", image: "" }
         ];
 
         const defaultTemplate = {
-            logoUrl: "https://placehold.co/100x100/eae2db/734d29?text=CozyCup",
-            showLogo: true,
-            shopName: "CozyCup Cafe & Bistro",
-            tagline: "Best Coffee in Town!",
-            address: "Main Street, Suite 402, Bangalore",
+            logoUrl: "https://placehold.co/100x100/f2e8e5/b25329?text=Chill+Out",
+            showLogo: false,
+            shopName: "CHILL OUT CAFE & RESTAURANT",
+            tagline: "REFRESHING & HEALTHY",
+            address: "Chill Out Cafe, Gudalur, TN",
             phone: "+91 9876543210",
             paperWidth: "58mm",
             fontSize: "12px",
             lineHeight: "1.4",
-            footerMessage: "Thank you for your visit! Come back soon.",
+            footerMessage: "Thank you! Visit again.",
             showBarcode: true,
             showCashier: true
         };
 
+        // Deep wrapped sandbox structures
         function safeGetItem(key, defaultVal) {
             try {
                 const val = localStorage.getItem(key);
                 return val ? JSON.parse(val) : defaultVal;
             } catch (e) {
-                console.warn("Storage restricted or unavailable. Running in-memory database configuration.");
+                console.warn("Standard client browser sandbox storage limited. Retaining in-memory arrays.");
                 return defaultVal;
             }
         }
@@ -657,18 +823,26 @@
             try {
                 localStorage.setItem(key, JSON.stringify(val));
             } catch (e) {
-                console.warn("Storage restricted. Operations will remain inside runtime cache memory only.");
+                console.warn("Local storage write denied.");
             }
         }
 
-        // Programmatic instant load initialization
+        // Programmatic initialization
         function initApp() {
-            categories = safeGetItem("cafe_categories", defaultCategories);
-            products = safeGetItem("cafe_products", defaultProducts);
-            transactions = safeGetItem("cafe_transactions", []);
-            templateConfig = safeGetItem("cafe_template", defaultTemplate);
+            categories = safeGetItem("chill_out_categories", defaultCategories);
+            products = safeGetItem("chill_out_products", defaultProducts);
+            transactions = safeGetItem("chill_out_transactions", []);
+            templateConfig = safeGetItem("chill_out_template", defaultTemplate);
 
-            // Set up search bar shortcut listener
+            // Dark Mode restoration
+            const darkSaved = safeGetItem("chill_out_dark_mode", false);
+            if (darkSaved) {
+                document.documentElement.classList.add('dark');
+                document.body.classList.add('dark-mode-active');
+                document.getElementById('theme-icon').className = "fa-solid fa-sun text-base text-yellow-400 animate-spin-slow";
+            }
+
+            // Bind global search focus keyboard handler
             document.removeEventListener('keydown', handleGlobalKeydown);
             document.addEventListener('keydown', handleGlobalKeydown);
 
@@ -676,80 +850,17 @@
             refreshAllUI();
         }
 
-        function commitTransaction(txRecord) {
-            if (editingTransactionId) {
-                const index = transactions.findIndex(t => t.id === editingTransactionId);
-                if (index !== -1) {
-                    transactions[index] = txRecord;
-                } else {
-                    transactions.push(txRecord);
-                }
-                editingTransactionId = null;
-                document.getElementById('editing-order-banner').classList.add('hidden');
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            document.body.classList.toggle('dark-mode-active', isDark);
+            const icon = document.getElementById('theme-icon');
+            if (isDark) {
+                icon.className = "fa-solid fa-sun text-base text-yellow-400";
+                safeSetItem("chill_out_dark_mode", true);
             } else {
-                const index = transactions.findIndex(t => t.id === txRecord.id);
-                if (index !== -1) {
-                    transactions[index] = txRecord;
-                } else {
-                    transactions.push(txRecord);
-                }
+                icon.className = "fa-solid fa-moon text-base text-slate-700";
+                safeSetItem("chill_out_dark_mode", false);
             }
-            safeSetItem("cafe_transactions", transactions);
-        }
-
-        function closePrintConfirm(isSuccess) {
-            document.getElementById('print-confirm-modal').classList.add('hidden');
-            if (isSuccess && pendingTxRecord) {
-                commitTransaction(pendingTxRecord);
-                cart = [];
-                recalculateCart();
-                showAlert("Checkout complete", `Receipt filed under invoice ID: ${pendingTxRecord.id}`);
-                renderReports();
-            } else {
-                showAlert("Order preserved", "Cart was saved but not cleared so you can fix printer connections.", false);
-            }
-            pendingTxRecord = null;
-        }
-
-        function editTransaction(txId) {
-            const tx = transactions.find(t => t.id === txId);
-            if (!tx) return;
-
-            editingTransactionId = tx.id;
-            cart = [];
-
-            tx.items.forEach(item => {
-                let catalogProd = products.find(p => p.id === item.id);
-                if (!catalogProd) {
-                    catalogProd = {
-                        id: item.id,
-                        name: item.name,
-                        price: item.price,
-                        categoryId: "",
-                        color: "slate",
-                        image: ""
-                    };
-                }
-                cart.push({
-                    product: catalogProd,
-                    quantity: item.quantity
-                });
-            });
-
-            document.getElementById('editing-order-id').innerText = tx.id;
-            document.getElementById('editing-order-banner').classList.remove('hidden');
-
-            recalculateCart();
-            switchTab('pos');
-            showAlert("Invoice loaded", `Order ${tx.id} is loaded into active workspace for editing.`);
-        }
-
-        function cancelEditingOrder() {
-            editingTransactionId = null;
-            document.getElementById('editing-order-banner').classList.add('hidden');
-            cart = [];
-            recalculateCart();
-            showAlert("Action cancelled", "Exited update session. Draft cleared.", false);
         }
 
         function handleGlobalKeydown(e) {
@@ -773,14 +884,12 @@
         function switchTab(tabId) {
             document.querySelectorAll('.tab-view').forEach(view => view.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-brand-500', 'text-white', 'shadow-sm', 'shadow-brand-500/10');
-                btn.classList.add('text-slate-600', 'hover:bg-slate-100');
+                btn.className = "tab-btn flex items-center space-x-2 px-3.5 py-2.5 rounded-xl text-sm font-extrabold text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all duration-150";
             });
 
             document.getElementById(`view-${tabId}`).classList.remove('hidden');
             const targetBtn = document.getElementById(`tab-${tabId}`);
-            targetBtn.classList.remove('text-slate-600', 'hover:bg-slate-100');
-            targetBtn.classList.add('bg-brand-500', 'text-white', 'shadow-sm', 'shadow-brand-500/10');
+            targetBtn.className = "tab-btn flex items-center space-x-2 px-3.5 py-2.5 rounded-xl text-sm font-extrabold transition-all duration-150 bg-brand-500 text-white shadow-md shadow-brand-500/10";
 
             refreshAllUI();
         }
@@ -792,11 +901,11 @@
             const icon = document.getElementById('alert-icon');
             
             if (isSuccess) {
-                iconWrapper.className = "flex items-center space-x-2 text-emerald-500 mb-3";
-                icon.className = "fa-solid fa-circle-check text-lg";
+                iconWrapper.className = "flex items-center space-x-3 text-emerald-500 mb-3";
+                icon.className = "fa-solid fa-circle-check text-2xl";
             } else {
-                iconWrapper.className = "flex items-center space-x-2 text-red-500 mb-3";
-                icon.className = "fa-solid fa-circle-xmark text-lg";
+                iconWrapper.className = "flex items-center space-x-3 text-red-500 mb-3";
+                icon.className = "fa-solid fa-circle-xmark text-2xl";
             }
             document.getElementById('alert-modal').classList.remove('hidden');
         }
@@ -821,21 +930,21 @@
             }
         }
 
-        // ==================== POS BILLING ENGINE CONTROLLER ====================
+        // ==================== TAB 1: POS CORE CATALOG CONTROLLERS ====================
         let activePOSCategory = "all";
 
         function renderPOSCategories() {
             const container = document.getElementById('pos-category-filters');
             container.innerHTML = `
-                <button onclick="setPOSCategory('all')" class="px-3 py-1 text-[10px] font-extrabold rounded-full whitespace-nowrap transition-all ${activePOSCategory === 'all' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">
-                    ALL
+                <button onclick="setPOSCategory('all')" class="px-4 py-2.5 text-xs font-black rounded-xl whitespace-nowrap tracking-wider transition-all ${activePOSCategory === 'all' ? 'bg-brand-500 text-white shadow-md shadow-brand-500/15' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}">
+                    SHOW ALL
                 </button>
             `;
             
             categories.forEach(cat => {
                 const isActive = activePOSCategory === cat.id;
                 container.innerHTML += `
-                    <button onclick="setPOSCategory('${cat.id}')" class="px-3 py-1 text-[10px] font-extrabold rounded-full whitespace-nowrap transition-all ${isActive ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">
+                    <button onclick="setPOSCategory('${cat.id}')" class="px-4 py-2.5 text-xs font-black rounded-xl whitespace-nowrap tracking-wider transition-all ${isActive ? 'bg-brand-500 text-white shadow-md shadow-brand-500/15' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}">
                         ${cat.name.toUpperCase()}
                     </button>
                 `;
@@ -872,33 +981,28 @@
 
             filtered.forEach(prod => {
                 const colorMap = {
-                    amber: "bg-amber-500/10 text-amber-800 hover:bg-amber-500/20 border-amber-100",
-                    rose: "bg-rose-500/10 text-rose-800 hover:bg-rose-500/20 border-rose-100",
-                    emerald: "bg-emerald-500/10 text-emerald-800 hover:bg-emerald-500/20 border-emerald-100",
-                    blue: "bg-blue-500/10 text-blue-800 hover:bg-blue-500/20 border-blue-100",
-                    slate: "bg-slate-500/10 text-slate-800 hover:bg-slate-500/20 border-slate-150"
+                    amber: "bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-400 hover:border-amber-400 border-slate-200 dark:border-slate-800",
+                    rose: "bg-rose-50 dark:bg-rose-950/20 text-rose-800 dark:text-rose-400 hover:border-rose-400 border-slate-200 dark:border-slate-800",
+                    emerald: "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-400 hover:border-emerald-400 border-slate-200 dark:border-slate-800",
+                    blue: "bg-blue-50 dark:bg-blue-950/20 text-blue-800 dark:text-blue-400 hover:border-blue-400 border-slate-200 dark:border-slate-800",
+                    slate: "bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-300 hover:border-slate-400 border-slate-200 dark:border-slate-800"
                 };
-                const colorClass = colorMap[prod.color] || colorMap.slate;
+                const cardStyle = colorMap[prod.color] || colorMap.slate;
 
                 const card = document.createElement('div');
-                // Highly compact touch targets with simple indicators, optimized to display dozens on a single screen
-                card.className = "bg-white border border-slate-200 hover:border-brand-500 rounded-lg p-2 flex flex-col justify-between transition-all duration-150 cursor-pointer shadow-3xs hover:shadow-xs active:scale-95";
+                card.className = `${cardStyle} border rounded-2xl p-4 flex flex-col justify-between transition-all duration-150 cursor-pointer shadow-3xs hover:shadow active:scale-95 select-none`;
                 card.onclick = () => addToCart(prod);
-
-                const thumbPic = prod.image ? 
-                    `<img src="${prod.image}" alt="" onerror="this.style.display='none';" class="w-full h-8 object-cover rounded-md mb-1.5">` : 
-                    `<span class="text-xs mr-1">☕</span>`;
 
                 card.innerHTML = `
                     <div class="flex items-start">
                         <div class="flex-1 min-w-0">
-                            <h4 class="font-bold text-slate-800 text-[11px] leading-tight truncate" title="${prod.name}">${prod.name}</h4>
-                            <span class="inline-block text-[8px] uppercase font-bold text-slate-450 tracking-wider">${getCategoryName(prod.categoryId)}</span>
+                            <h4 class="font-black text-slate-900 dark:text-white text-sm leading-snug truncate" title="${prod.name}">${prod.name}</h4>
+                            <span class="inline-block text-[9px] uppercase font-bold text-slate-450 dark:text-slate-500 tracking-wider mt-1">${getCategoryName(prod.categoryId)}</span>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between mt-1.5 pt-1.5 border-t border-slate-100">
-                        <span class="font-black text-slate-900 text-[11px]">₹${prod.price.toFixed(0)}</span>
-                        <span class="w-5 h-5 bg-brand-50 text-brand-600 rounded-md flex items-center justify-center text-[10px] hover:bg-brand-500 hover:text-white transition-all">
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                        <span class="font-black text-slate-900 dark:text-white text-base">₹${prod.price.toFixed(0)}</span>
+                        <span class="w-8 h-8 bg-brand-500 text-white rounded-xl flex items-center justify-center text-xs hover:bg-brand-600 transition-all shadow-xs">
                             <i class="fa-solid fa-plus"></i>
                         </span>
                     </div>
@@ -912,7 +1016,7 @@
             return cat ? cat.name : "Other";
         }
 
-        // ==================== ACTIVE CART LOGIC ====================
+        // ==================== CHECKOUT CART CONTROLLER ====================
         function addToCart(product) {
             const existing = cart.find(item => item.product.id === product.id);
             if (existing) {
@@ -945,15 +1049,12 @@
         }
 
         function recalculateCart() {
-            let subtotal = 0;
+            let total = 0;
             cart.forEach(item => {
-                subtotal += item.product.price * item.quantity;
+                total += item.product.price * item.quantity;
             });
 
-            // Discontinued and removed tax/GST calculation completely. Total directly equals subtotal.
-            const grandTotal = subtotal;
-
-            document.getElementById('cart-grand-total').innerText = `₹${grandTotal.toFixed(2)}`;
+            document.getElementById('cart-grand-total').innerText = `₹${total.toFixed(2)}`;
             
             const totalCount = cart.reduce((acc, curr) => acc + curr.quantity, 0);
             document.getElementById('cart-item-count').innerText = `${totalCount} Item${totalCount !== 1 ? 's' : ''}`;
@@ -974,25 +1075,25 @@
             list.innerHTML = "";
             cart.forEach(item => {
                 const element = document.createElement('div');
-                element.className = "flex items-center justify-between p-2 bg-slate-50 border border-slate-100 rounded-lg space-x-2 transition-all";
+                element.className = "flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-850 border border-slate-100 dark:border-slate-800 rounded-2xl space-x-3 transition-all";
                 
                 element.innerHTML = `
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-bold text-slate-800 text-[11px] truncate leading-tight">${item.product.name}</h4>
-                        <span class="text-[9px] text-slate-400 font-semibold">₹${item.product.price.toFixed(2)}</span>
+                        <h4 class="font-black text-slate-800 dark:text-slate-200 text-sm truncate leading-tight">${item.product.name}</h4>
+                        <span class="text-xs text-slate-400 dark:text-slate-500 font-extrabold mt-0.5 block">₹${item.product.price.toFixed(2)}</span>
                     </div>
                     
-                    <!-- Highly accessible touchscreen action controllers -->
-                    <div class="flex items-center space-x-1.5 bg-white rounded-lg border border-slate-200 p-0.5">
-                        <button onclick="updateCartQuantity('${item.product.id}', -1)" class="w-6 h-6 flex items-center justify-center text-slate-500 hover:bg-slate-100 rounded-md text-xs font-black">-</button>
-                        <span class="text-[11px] font-extrabold w-4 text-center text-slate-800">${item.quantity}</span>
-                        <button onclick="updateCartQuantity('${item.product.id}', 1)" class="w-6 h-6 flex items-center justify-center text-slate-500 hover:bg-slate-100 rounded-md text-xs font-black">+</button>
+                    <!-- Highly accessible touch counters -->
+                    <div class="flex items-center space-x-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-1">
+                        <button onclick="updateCartQuantity('${item.product.id}', -1)" class="w-8 h-8 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-sm font-black">-</button>
+                        <span class="text-xs font-black w-6 text-center text-slate-800 dark:text-slate-200">${item.quantity}</span>
+                        <button onclick="updateCartQuantity('${item.product.id}', 1)" class="w-8 h-8 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-sm font-black">+</button>
                     </div>
 
-                    <div class="text-right flex items-center space-x-2">
-                        <span class="font-bold text-slate-900 text-[10px] w-12 block">₹${(item.product.price * item.quantity).toFixed(0)}</span>
-                        <button onclick="removeFromCart('${item.product.id}')" class="text-slate-450 hover:text-red-500 transition-colors p-1 hover:bg-red-50 rounded-lg">
-                            <i class="fa-regular fa-trash-can text-xs"></i>
+                    <div class="text-right flex items-center space-x-3">
+                        <span class="font-black text-slate-900 dark:text-white text-xs w-16 block">₹${(item.product.price * item.quantity).toFixed(0)}</span>
+                        <button onclick="removeFromCart('${item.product.id}')" class="text-slate-400 hover:text-red-500 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl">
+                            <i class="fa-regular fa-trash-can text-sm"></i>
                         </button>
                     </div>
                 `;
@@ -1003,28 +1104,25 @@
         // ==================== RECEIPT PRINT BUILDER ENGINE ====================
         function getReceiptData(customTx = null) {
             let checkoutCart = [];
-            let subtotal = 0;
+            let total = 0;
             let receiptId = editingTransactionId || ("TX-" + Math.floor(100000 + Math.random() * 900000));
             let timeString = new Date().toLocaleString();
 
             if (customTx) {
                 checkoutCart = customTx.items;
-                subtotal = customTx.subtotal;
+                total = customTx.grandTotal;
                 receiptId = customTx.id;
                 timeString = new Date(customTx.timestamp).toLocaleString();
             } else {
                 checkoutCart = cart;
-                subtotal = cart.reduce((acc, c) => acc + (c.product.price * c.quantity), 0);
+                total = cart.reduce((acc, c) => acc + (c.product.price * c.quantity), 0);
             }
-
-            const grandTotal = subtotal;
 
             return {
                 id: receiptId,
                 date: timeString,
                 items: checkoutCart,
-                subtotal: subtotal,
-                grandTotal: grandTotal
+                grandTotal: total
             };
         }
 
@@ -1057,9 +1155,9 @@
             templateConfig.showBarcode = document.getElementById('designer-show-barcode').checked;
             templateConfig.showCashier = document.getElementById('designer-show-cashier').checked;
 
-            safeSetItem("cafe_template", templateConfig);
+            safeSetItem("chill_out_template", templateConfig);
             updateDesignerPreview();
-            showAlert("Layout Configured", "Thermal receipt formatting variables saved.");
+            showAlert("Success", "Print design templates saved.");
         }
 
         function generateThermalHTML(receipt, isSimulated = false) {
@@ -1072,8 +1170,8 @@
                 const unitPrice = item.product ? item.product.price : item.price;
                 const total = unitPrice * item.quantity;
                 itemsHTML += `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                        <span style="flex: 1; text-align: left; padding-right: 8px; word-wrap: break-word;">${title} x ${item.quantity}</span>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                        <span style="flex: 1; text-align: left; padding-right: 6px; word-wrap: break-word;">${title} x ${item.quantity}</span>
                         <span style="font-weight: bold;">₹${total.toFixed(2)}</span>
                     </div>
                 `;
@@ -1083,8 +1181,8 @@
             if (templateConfig.showBarcode) {
                 barcodeHTML = `
                     <div style="text-align: center; margin-top: 15px; margin-bottom: 5px;">
-                        <div style="font-family: monospace; letter-spacing: 3px; font-size: 11px;">|||||| || | |||| ||| |||</div>
-                        <div style="font-size: 10px; margin-top: 2px;">${receipt.id}</div>
+                        <div style="font-family: monospace; letter-spacing: 2px; font-size: 11px;">|||||| || | |||| ||| |||</div>
+                        <div style="font-size: 9px; margin-top: 1px;">${receipt.id}</div>
                     </div>
                 `;
             }
@@ -1098,7 +1196,7 @@
             if (templateConfig.showLogo && templateConfig.logoUrl) {
                 logoHTML = `
                     <div style="text-align: center; margin-bottom: 8px;">
-                        <img src="${templateConfig.logoUrl}" alt="" style="max-width: 60px; border-radius: 50%;" onerror="this.style.display='none'">
+                        <img src="${templateConfig.logoUrl}" alt="" style="max-width: 65px; border-radius: 50%;" onerror="this.style.display='none'">
                     </div>
                 `;
             }
@@ -1159,6 +1257,81 @@
             `;
         }
 
+        function generatePlaintextReceipt(receipt) {
+            const width = templateConfig.paperWidth === "58mm" ? 32 : 48;
+            const divider = "-".repeat(width);
+            const thickDivider = "=".repeat(width);
+            
+            let lines = [];
+            
+            // Header
+            lines.push(centerText(templateConfig.shopName, width));
+            lines.push(centerText(templateConfig.tagline, width));
+            lines.push(centerText(templateConfig.address, width));
+            lines.push(centerText(`Tel: ${templateConfig.phone}`, width));
+            lines.push(divider);
+            
+            // Metadata
+            lines.push(`Receipt: ${receipt.id}`);
+            lines.push(`Date: ${receipt.date}`);
+            if (templateConfig.showCashier) {
+                lines.push("Clerk: Server POS");
+            }
+            lines.push(divider);
+            
+            // Items table
+            receipt.items.forEach(item => {
+                const title = item.product ? item.product.name : item.name;
+                const unitPrice = item.product ? item.product.price : item.price;
+                const qtyText = `x${item.quantity}`;
+                const totalText = `INR ${ (unitPrice * item.quantity).toFixed(0) }`;
+                
+                // If title fits
+                const desc = `${title} ${qtyText}`;
+                if (desc.length + totalText.length + 1 <= width) {
+                    const spaces = width - (desc.length + totalText.length);
+                    lines.push(desc + " ".repeat(spaces) + totalText);
+                } else {
+                    lines.push(title);
+                    const spaces = width - (qtyText.length + totalText.length);
+                    lines.push(qtyText + " ".repeat(spaces) + totalText);
+                }
+            });
+            lines.push(divider);
+            
+            // Grand Total
+            const totalLabel = "TOTAL PAYABLE:";
+            const totalVal = `INR ${receipt.grandTotal.toFixed(2)}`;
+            const spaceCount = width - (totalLabel.length + totalVal.length);
+            lines.push(totalLabel + " ".repeat(spaceCount > 0 ? spaceCount : 1) + totalVal);
+            lines.push(thickDivider);
+            
+            // Footer
+            lines.push(centerText(templateConfig.footerMessage, width));
+            lines.push("\n\n"); // Feed paper lines
+            
+            return lines.join("\n");
+        }
+
+        function centerText(text, width) {
+            if (text.length >= width) return text.substring(0, width);
+            const spacesNeeded = Math.floor((width - text.length) / 2);
+            return " ".repeat(spacesNeeded) + text;
+        }
+
+        function copyPlaintextToClipboard(text) {
+            // Standard fallback using execCommand inside modern sandboxes
+            const el = document.createElement('textarea');
+            el.value = text;
+            el.setAttribute('readonly', '');
+            el.style.position = 'absolute';
+            el.style.left = '-9999px';
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+        }
+
         function updateDesignerPreview() {
             const paperWidth = document.getElementById('designer-paper-width').value;
             const previewWrapper = document.getElementById('preview-width-wrapper');
@@ -1173,11 +1346,10 @@
                 id: "TX-489021",
                 date: new Date().toLocaleString(),
                 items: [
-                    { name: "Classic Cappuccino", price: 180.00, quantity: 2 },
-                    { name: "Butter Croissant", price: 150.00, quantity: 1 }
+                    { name: "Avocado Milkshake", price: 70.00, quantity: 2 },
+                    { name: "French Fries", price: 50.00, quantity: 1 }
                 ],
-                subtotal: 510.00,
-                grandTotal: 510.00
+                grandTotal: 190.00
             };
 
             const html = generateThermalHTML(dummyTx, true);
@@ -1188,29 +1360,24 @@
         }
 
         function triggerThermalPrint(receipt) {
+            // Copy plaintext to clipboard instantly so companion apps like RawBT can catch it
+            const plaintext = generatePlaintextReceipt(receipt);
+            copyPlaintextToClipboard(plaintext);
+
+            // Native windows printer dispatches
             const printIframe = document.getElementById('print-iframe');
             const iframeDoc = printIframe.contentDocument || printIframe.contentWindow.document;
-
             const receiptHTML = generateThermalHTML(receipt, false);
 
             iframeDoc.open();
             iframeDoc.write(`
                 <html>
                 <head>
-                    <title>Thermal Print Draft</title>
+                    <title>Print Receipt</title>
                     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
                     <style>
-                        @page {
-                            margin: 0;
-                            size: auto;
-                        }
-                        html, body {
-                            margin: 0;
-                            padding: 0;
-                            background-color: #fff;
-                            width: 100%;
-                            height: auto;
-                        }
+                        @page { margin: 0; size: auto; }
+                        html, body { margin: 0; padding: 0; background-color: #fff; width: 100%; height: auto; }
                     </style>
                 </head>
                 <body onload="setTimeout(function(){ window.print(); }, 120);">
@@ -1221,10 +1388,10 @@
             iframeDoc.close();
         }
 
-        // ==================== CHECKOUT CONTROLLERS ====================
+        // ==================== CHECKOUT PROCESSORS ====================
         function processCheckout(withPrint = false) {
             if (cart.length === 0) {
-                showAlert("Empty Cart", "No products selected. Click on a menu item below to begin billing.", false);
+                showAlert("Cart Empty", "Please select items from the menu catalog to begin checkout.", false);
                 return;
             }
 
@@ -1239,7 +1406,6 @@
                     price: item.product.price,
                     quantity: item.quantity
                 })),
-                subtotal: receipt.subtotal,
                 grandTotal: receipt.grandTotal
             };
 
@@ -1247,15 +1413,92 @@
                 pendingTxRecord = txRecord;
                 triggerThermalPrint(receipt);
                 
-                // Triggers safeguard dialog popup for printer failure safety checkpoint
+                // Copy notice inside notification alert
+                const alertMessage = "Plaintext formatting copied automatically to clipboard for Mobile Bluetooth companion printers. Click Proceed to save.";
                 document.getElementById('print-confirm-modal').classList.remove('hidden');
             } else {
                 commitTransaction(txRecord);
                 cart = [];
                 recalculateCart();
-                showAlert("Order recorded", `Invoice successfully generated under ID: ${txRecord.id}`);
+                showAlert("Success", `Transaction ${txRecord.id} recorded in ledger.`);
                 renderReports();
             }
+        }
+
+        function commitTransaction(txRecord) {
+            if (editingTransactionId) {
+                const index = transactions.findIndex(t => t.id === editingTransactionId);
+                if (index !== -1) {
+                    transactions[index] = txRecord;
+                } else {
+                    transactions.push(txRecord);
+                }
+                editingTransactionId = null;
+                document.getElementById('editing-order-banner').classList.add('hidden');
+            } else {
+                const index = transactions.findIndex(t => t.id === txRecord.id);
+                if (index !== -1) {
+                    transactions[index] = txRecord;
+                } else {
+                    transactions.push(txRecord);
+                }
+            }
+            safeSetItem("chill_out_transactions", transactions);
+        }
+
+        function closePrintConfirm(isSuccess) {
+            document.getElementById('print-confirm-modal').classList.add('hidden');
+            if (isSuccess && pendingTxRecord) {
+                commitTransaction(pendingTxRecord);
+                cart = [];
+                recalculateCart();
+                showAlert("Checkout complete", `Invoice logged: ${pendingTxRecord.id}`);
+                renderReports();
+            } else {
+                showAlert("Order preserved", "Active draft retained.", false);
+            }
+            pendingTxRecord = null;
+        }
+
+        function editTransaction(txId) {
+            const tx = transactions.find(t => t.id === txId);
+            if (!tx) return;
+
+            editingTransactionId = tx.id;
+            cart = [];
+
+            tx.items.forEach(item => {
+                let catalogProd = products.find(p => p.id === item.id);
+                if (!catalogProd) {
+                    catalogProd = {
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        categoryId: "",
+                        color: "slate",
+                        image: ""
+                    };
+                }
+                cart.push({
+                    product: catalogProd,
+                    quantity: item.quantity
+                });
+            });
+
+            document.getElementById('editing-order-id').innerText = tx.id;
+            document.getElementById('editing-order-banner').classList.remove('hidden');
+
+            recalculateCart();
+            switchTab('pos');
+            showAlert("Invoice loaded", `Transaction ${tx.id} loaded into checkout.`);
+        }
+
+        function cancelEditingOrder() {
+            editingTransactionId = null;
+            document.getElementById('editing-order-banner').classList.add('hidden');
+            cart = [];
+            recalculateCart();
+            showAlert("Action cancelled", "Exited transaction update mode.", false);
         }
 
         function reprintOldTransaction(txId) {
@@ -1264,9 +1507,10 @@
 
             const receipt = getReceiptData(tx);
             triggerThermalPrint(receipt);
+            showAlert("Dispatched", "Plaintext copied to clipboard. Thermal receipt triggered.");
         }
 
-        // ==================== SETTINGS (CATEGORIES & MENU) ====================
+        // ==================== SETTINGS PROCESSORS ====================
         function renderSettingsCategories() {
             const list = document.getElementById('settings-categories-list');
             if (!list) return;
@@ -1275,18 +1519,18 @@
             categories.forEach(cat => {
                 const count = products.filter(p => p.categoryId === cat.id).length;
                 const div = document.createElement('div');
-                div.className = "flex items-center justify-between p-2 bg-slate-50 border border-slate-100 rounded-lg hover:bg-slate-100 text-xs";
+                div.className = "flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 border border-slate-150 dark:border-slate-750 rounded-xl hover:bg-slate-100 text-xs transition-all";
                 div.innerHTML = `
                     <div>
-                        <span class="font-bold text-slate-800">${cat.name}</span>
-                        <span class="text-[9px] text-slate-400 block font-semibold">${count} Item${count !== 1 ? 's' : ''}</span>
+                        <span class="font-black text-slate-800 dark:text-slate-200">${cat.name}</span>
+                        <span class="text-[10px] text-slate-400 dark:text-slate-500 block font-bold">${count} Products</span>
                     </div>
-                    <div class="flex items-center space-x-1">
-                        <button onclick="editCategory('${cat.id}')" class="text-slate-400 hover:text-brand-500 p-1 hover:bg-white rounded-md">
-                            <i class="fa-solid fa-pen text-[10px]"></i>
+                    <div class="flex items-center space-x-1.5">
+                        <button onclick="editCategory('${cat.id}')" class="text-slate-500 hover:text-brand-500 p-2 hover:bg-white dark:hover:bg-slate-750 rounded-lg">
+                            <i class="fa-solid fa-pen text-[11px]"></i>
                         </button>
-                        <button onclick="deleteCategory('${cat.id}')" class="text-slate-400 hover:text-red-500 p-1 hover:bg-white rounded-md">
-                            <i class="fa-regular fa-trash-can text-[10px]"></i>
+                        <button onclick="deleteCategory('${cat.id}')" class="text-slate-400 hover:text-red-500 p-2 hover:bg-white dark:hover:bg-slate-750 rounded-lg">
+                            <i class="fa-regular fa-trash-can text-[11px]"></i>
                         </button>
                     </div>
                 `;
@@ -1320,10 +1564,10 @@
                 categories.push(newCat);
             }
 
-            safeSetItem("cafe_categories", categories);
+            safeSetItem("chill_out_categories", categories);
             cancelCategoryEdit();
             refreshAllUI();
-            showAlert("Categories updated", "Menu configuration saved.");
+            showAlert("Success", "Category catalog updated.");
         }
 
         function editCategory(catId) {
@@ -1339,12 +1583,12 @@
         function cancelCategoryEdit() {
             document.getElementById('edit-cat-id').value = "";
             document.getElementById('category-name-input').value = "";
-            document.getElementById('cat-submit-btn').innerHTML = `Save`;
+            document.getElementById('cat-submit-btn').innerHTML = `Save Category`;
             document.getElementById('cat-cancel-btn').classList.add('hidden');
         }
 
         async function deleteCategory(catId) {
-            const confirm = await showConfirm("Deleting this category will unassign its products. Do you want to proceed?");
+            const confirm = await showConfirm("Deleting this category will unassign its products. Proceed?");
             if (!confirm) return;
 
             products.forEach(p => {
@@ -1352,11 +1596,11 @@
             });
 
             categories = categories.filter(c => c.id !== catId);
-            safeSetItem("cafe_categories", categories);
-            safeSetItem("cafe_products", products);
+            safeSetItem("chill_out_categories", categories);
+            safeSetItem("chill_out_products", products);
             
             refreshAllUI();
-            showAlert("Removed", "Category directory configuration cleared.");
+            showAlert("Removed", "Category database record cleared.");
         }
 
         function renderSettingsProductsTable() {
@@ -1366,38 +1610,38 @@
 
             products.forEach(prod => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 text-xs";
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800 text-xs transition-colors";
                 
                 const colorMap = {
-                    amber: "bg-amber-100 text-amber-800",
-                    rose: "bg-rose-100 text-rose-800",
-                    emerald: "bg-emerald-100 text-emerald-800",
-                    blue: "bg-blue-100 text-blue-800",
-                    slate: "bg-slate-100 text-slate-800"
+                    amber: "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400",
+                    rose: "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-400",
+                    emerald: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400",
+                    blue: "bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-400",
+                    slate: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300"
                 };
                 const colorClass = colorMap[prod.color] || colorMap.slate;
 
                 tr.innerHTML = `
-                    <td class="px-4 py-2.5 whitespace-nowrap">
+                    <td class="px-4 py-3.5 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="w-6 h-6 rounded flex items-center justify-center font-bold ${colorClass} mr-2">☕</div>
+                            <div class="w-7 h-7 rounded-lg flex items-center justify-center font-bold ${colorClass} mr-2.5">☕</div>
                             <div>
-                                <span class="font-bold text-slate-800 block">${prod.name}</span>
+                                <span class="font-black text-slate-800 dark:text-slate-200 block text-xs">${prod.name}</span>
                             </div>
                         </div>
                     </td>
-                    <td class="px-4 py-2.5 whitespace-nowrap font-semibold text-slate-500">
+                    <td class="px-4 py-3.5 whitespace-nowrap font-extrabold text-slate-500 dark:text-slate-400">
                         ${getCategoryName(prod.categoryId)}
                     </td>
-                    <td class="px-4 py-2.5 whitespace-nowrap font-extrabold text-slate-900">
+                    <td class="px-4 py-3.5 whitespace-nowrap font-black text-slate-900 dark:text-white text-xs">
                         ₹${prod.price.toFixed(2)}
                     </td>
-                    <td class="px-4 py-2.5 whitespace-nowrap text-right">
+                    <td class="px-4 py-3.5 whitespace-nowrap text-right">
                         <div class="flex items-center justify-end space-x-1">
-                            <button onclick="editProduct('${prod.id}')" class="text-slate-500 hover:text-brand-650 p-1 hover:bg-slate-100 rounded-md">
+                            <button onclick="editProduct('${prod.id}')" class="text-slate-500 hover:text-brand-600 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
-                            <button onclick="deleteProduct('${prod.id}')" class="text-slate-400 hover:text-red-500 p-1 hover:bg-slate-100 rounded-md">
+                            <button onclick="deleteProduct('${prod.id}')" class="text-slate-400 hover:text-red-500 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
                                 <i class="fa-regular fa-trash-can"></i>
                             </button>
                         </div>
@@ -1469,23 +1713,23 @@
                 products.push(newProd);
             }
 
-            safeSetItem("cafe_products", products);
+            safeSetItem("chill_out_products", products);
             closeProductModal();
             refreshAllUI();
-            showAlert("Catalog Modified", `Product "${name}" saved to inventory list.`);
+            showAlert("Success", `Product "${name}" saved to directory.`);
         }
 
         async function deleteProduct(prodId) {
-            const confirm = await showConfirm("Remove this product from the master catalog list?");
+            const confirm = await showConfirm("Permanently delete this product record?");
             if (!confirm) return;
 
             products = products.filter(p => p.id !== prodId);
-            safeSetItem("cafe_products", products);
+            safeSetItem("chill_out_products", products);
             refreshAllUI();
-            showAlert("Deleted", "Menu record removed successfully.");
+            showAlert("Success", "Product catalog entry removed.");
         }
 
-        // ==================== SALES REPORT & LOGS PANEL ====================
+        // ==================== TAB 3: REPORTS DASHBOARD ====================
         function renderReports() {
             const tbody = document.getElementById('reports-transactions-table');
             const emptyState = document.getElementById('reports-empty-state');
@@ -1497,11 +1741,11 @@
                 tbody.closest('table').classList.add('hidden');
                 
                 document.getElementById('report-daily-revenue').innerText = "₹0.00";
-                document.getElementById('report-daily-count').innerText = "0 checks";
+                document.getElementById('report-daily-count').innerText = "0 tickets";
                 document.getElementById('report-weekly-revenue').innerText = "₹0.00";
-                document.getElementById('report-weekly-count').innerText = "0 checks";
+                document.getElementById('report-weekly-count').innerText = "0 tickets";
                 document.getElementById('report-monthly-revenue').innerText = "₹0.00";
-                document.getElementById('report-monthly-count').innerText = "0 checks";
+                document.getElementById('report-monthly-count').innerText = "0 tickets";
                 return;
             }
 
@@ -1536,24 +1780,24 @@
                 }
 
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 text-xs";
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800 text-xs transition-colors";
                 
                 let summaryLine = tx.items.map(i => `${i.name} (x${i.quantity})`).join(', ');
-                if (summaryLine.length > 30) summaryLine = summaryLine.substring(0, 27) + "...";
+                if (summaryLine.length > 40) summaryLine = summaryLine.substring(0, 37) + "...";
 
                 tr.innerHTML = `
-                    <td class="px-4 py-2.5 whitespace-nowrap font-bold text-slate-800">${tx.id}</td>
-                    <td class="px-4 py-2.5 whitespace-nowrap text-slate-500">${new Date(tx.timestamp).toLocaleDateString()}</td>
-                    <td class="px-4 text-slate-650 max-w-[150px] truncate" title="${tx.items.map(i => `${i.name} x${i.quantity}`).join(', ')}">
+                    <td class="px-4 py-3 whitespace-nowrap font-black text-slate-800 dark:text-slate-350">${tx.id}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-slate-500 dark:text-slate-400 font-extrabold">${new Date(tx.timestamp).toLocaleDateString()}</td>
+                    <td class="px-4 py-3 text-slate-650 dark:text-slate-400 max-w-[200px] truncate" title="${tx.items.map(i => `${i.name} x${i.quantity}`).join(', ')}">
                         ${summaryLine}
                     </td>
-                    <td class="px-4 py-2.5 whitespace-nowrap font-extrabold text-slate-900 text-right">₹${tx.grandTotal.toFixed(0)}</td>
-                    <td class="px-4 py-2.5 whitespace-nowrap text-center space-x-1 flex items-center justify-center">
-                        <button onclick="editTransaction('${tx.id}')" class="text-amber-650 hover:text-amber-800 font-bold p-1 hover:bg-amber-50 rounded-md inline-flex items-center text-[10px]">
-                            <i class="fa-solid fa-pen mr-0.5"></i> Edit
+                    <td class="px-4 py-3 whitespace-nowrap font-black text-slate-900 dark:text-white text-right">₹${tx.grandTotal.toFixed(0)}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-center space-x-1.5 flex items-center justify-center">
+                        <button onclick="editTransaction('${tx.id}')" class="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 font-extrabold p-2 hover:bg-amber-50 dark:hover:bg-slate-750 rounded-xl inline-flex items-center">
+                            <i class="fa-solid fa-pen mr-1"></i> Edit
                         </button>
-                        <button onclick="reprintOldTransaction('${tx.id}')" class="text-brand-500 hover:text-brand-750 font-bold p-1 hover:bg-slate-100 rounded-md inline-flex items-center text-[10px]">
-                            <i class="fa-solid fa-print mr-0.5"></i> Print
+                        <button onclick="reprintOldTransaction('${tx.id}')" class="text-brand-500 hover:text-brand-650 font-extrabold p-2 hover:bg-slate-100 dark:hover:bg-slate-750 rounded-xl inline-flex items-center">
+                            <i class="fa-solid fa-print mr-1"></i> Reprint
                         </button>
                     </td>
                 `;
@@ -1561,11 +1805,11 @@
             });
 
             document.getElementById('report-daily-revenue').innerText = `₹${dailyRev.toFixed(2)}`;
-            document.getElementById('report-daily-count').innerText = `${dailyCount} transaction${dailyCount !== 1 ? 's' : ''}`;
+            document.getElementById('report-daily-count').innerText = `${dailyCount} Ticket${dailyCount !== 1 ? 's' : ''}`;
             document.getElementById('report-weekly-revenue').innerText = `₹${weeklyRev.toFixed(2)}`;
-            document.getElementById('report-weekly-count').innerText = `${weeklyCount} transaction${weeklyCount !== 1 ? 's' : ''}`;
+            document.getElementById('report-weekly-count').innerText = `${weeklyCount} Ticket${weeklyCount !== 1 ? 's' : ''}`;
             document.getElementById('report-monthly-revenue').innerText = `₹${monthlyRev.toFixed(2)}`;
-            document.getElementById('report-monthly-count').innerText = `${monthlyCount} transaction${monthlyCount !== 1 ? 's' : ''}`;
+            document.getElementById('report-monthly-count').innerText = `${monthlyCount} Ticket${monthlyCount !== 1 ? 's' : ''}`;
         }
 
         function filterTransactions() {
@@ -1583,19 +1827,19 @@
         }
 
         async function clearAllTransactionsPrompt() {
-            const confirm = await showConfirm("Permanently wipe all registered sales records? This cannot be undone.");
+            const confirm = await showConfirm("Wipe all sales ledger entries? This action is permanent.");
             if (!confirm) return;
 
             transactions = [];
-            safeSetItem("cafe_transactions", []);
+            safeSetItem("chill_out_transactions", []);
             refreshAllUI();
-            showAlert("Reset successful", "Sales records database has been cleared.");
+            showAlert("Success", "Sales transaction log wiped.");
         }
 
-        // ==================== EXCEL LEDGER COMPILER ====================
+        // ==================== EXCEL SHEET COMPILER ====================
         function exportToExcel() {
             if (transactions.length === 0) {
-                showAlert("Database empty", "No invoice entries to export.", false);
+                showAlert("Database Empty", "No transactional data available for export.", false);
                 return;
             }
 
@@ -1604,39 +1848,37 @@
                 tx.items.forEach(item => {
                     rows.push({
                         "Receipt ID": tx.id,
-                        "Date & Time": new Date(tx.timestamp).toLocaleString(),
-                        "Item Name": item.name,
+                        "Timestamp": new Date(tx.timestamp).toLocaleString(),
+                        "Product Name": item.name,
                         "Unit Price (INR)": item.price,
-                        "Quantity Ordered": item.quantity,
+                        "Quantity": item.quantity,
                         "Line Total (INR)": item.price * item.quantity,
-                        "Invoice Subtotal (INR)": tx.subtotal,
-                        "Grand Total Paid (INR)": tx.grandTotal
+                        "Invoice Total (INR)": tx.grandTotal
                     });
                 });
             });
 
             const worksheet = XLSX.utils.json_to_sheet(rows);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Daily Ledger Report");
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Daily Ledger Sales");
 
             const maxProps = [
                 { wch: 14 }, // Receipt ID
-                { wch: 22 }, // Date & Time
-                { wch: 24 }, // Item Name
-                { wch: 15 }, // Price
-                { wch: 15 }, // Qty
-                { wch: 16 }, // Line total
-                { wch: 18 }, // Subtotal
-                { wch: 18 }  // Grand Total
+                { wch: 22 }, // Timestamp
+                { wch: 25 }, // Product Name
+                { wch: 16 }, // Unit Price
+                { wch: 12 }, // Quantity
+                { wch: 16 }, // Line Total
+                { wch: 18 }  // Invoice Total
             ];
             worksheet['!cols'] = maxProps;
 
             const dateStr = new Date().toISOString().split('T')[0];
-            XLSX.writeFile(workbook, `CozyCup_Ledger_${dateStr}.xlsx`);
-            showAlert("Export Complete", "Spreadsheet ledger generated.");
+            XLSX.writeFile(workbook, `Chill_Out_Ledger_${dateStr}.xlsx`);
+            showAlert("Success", "Excel Ledger exported.");
         }
 
-        // Programmatic immediate load sequence
+        // Programmatic instant load sequences
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
             initApp();
         } else {
