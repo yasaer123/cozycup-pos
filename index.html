@@ -108,7 +108,7 @@
         <div id="view-pos" class="tab-view h-full flex flex-col md:flex-row-reverse bg-[#121212]">
             
             <!-- UPPER HALF/RIGHT COLUMN: ACTIVE CART BILLING SYSTEM -->
-            <div class="flex flex-col h-[38%] md:h-full md:w-[42%] shrink-0 bg-[#161616] border-b md:border-b-0 md:border-l border-neutral-850">
+            <div class="flex flex-col h-[38%] md:h-full md:w-[32%] md:max-w-[380px] md:min-w-[300px] shrink-0 bg-[#161616] border-b md:border-b-0 md:border-l border-neutral-850">
                 <!-- Cart Orange Header Bar -->
                 <div class="bg-[#e67e22] text-white px-4 py-2 grid grid-cols-12 text-[11px] font-black tracking-wider uppercase shrink-0">
                     <div class="col-span-6">ITEM</div>
@@ -170,7 +170,7 @@
             </div>
 
             <!-- LOWER HALF/LEFT COLUMN: DENSE PRODUCTS CATALOG -->
-            <div class="flex-1 flex flex-col min-h-0 bg-[#121212]">
+            <div class="flex-1 flex flex-col min-h-0 bg-[#121212] pl-4 md:pl-6 py-2">
                 <!-- Horizontal Category Filter Slider -->
                 <div class="bg-[#1a1a1a] border-b border-neutral-850 px-2 py-1.5 flex items-center space-x-1.5 overflow-x-auto no-scrollbar shrink-0" id="pos-category-filters">
                     <!-- Loaded programmatically -->
@@ -538,7 +538,6 @@
             { id: "p103", name: "STANDARD FALOODA", category: "falooda", price: 90 }
         ];
 
-
         // Global State Store with memory fail-safes (resolves iframe storage issues)
         let categories = [];
         let products = [];
@@ -713,7 +712,6 @@
             }
         }
 
-
         // Render sliding category horizontal pills
         function renderCategoryFilters() {
             const container = document.getElementById('pos-category-filters');
@@ -778,7 +776,6 @@
                 `;
             }).join('');
         }
-
 
         // Render added cart products inside layout
         function renderAddedCartRows() {
@@ -956,7 +953,6 @@
             renderAddedCartRows();
             closeCartItemEditModal();
         }
-
 
         // Perform final checkouts (Saves records, triggers thermal printing window, clears layout)
         function processCheckout(withPrint = false) {
@@ -1141,7 +1137,6 @@
             document.body.removeChild(textElement);
             console.log("ESC/POS raw content copied to clipboard for companion Bluetooth Print applications.");
         }
-
 
         // Compile reports KPIs (Daily, Weekly, Monthly metrics)
         function renderReportsLedger() {
