@@ -16,9 +16,12 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght=400;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- SheetJS for Excel logs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- PWA Inline Manifest Data URI -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Chill Out Cafe POS","short_name":"Chill POS","start_url":".","display":"standalone","background_color":"#121212","theme_color":"#121212","icons":[{"src":"https://placehold.co/192x192/f39c12/ffffff?text=POS","sizes":"192x192","type":"image/png"},{"src":"https://placehold.co/512x512/f39c12/ffffff?text=POS","sizes":"512x512","type":"image/png"}]}' />
 
     <style>
         body {
@@ -75,7 +78,6 @@
     <header class="bg-[#1e1e1e] border-b border-neutral-800 shrink-0 z-40 px-4 py-2">
         <div class="flex justify-between items-center h-12">
             <div class="flex items-center space-x-2">
-                <i class="fa-solid fa-list text-orange-500 text-lg"></i>
                 <h1 class="text-sm font-bold tracking-tight text-white uppercase" id="app-flow-title">Item Wise Bill</h1>
                 <!-- Cache Buster visual reference tag to guarantee we are loading the latest deployed script version -->
                 <span class="text-[9px] bg-orange-600/20 text-orange-400 px-1.5 py-0.5 rounded ml-2 font-mono uppercase tracking-widest hidden sm:inline-block">v2.5 - Live Sync</span>
@@ -89,11 +91,9 @@
                 <button onclick="toggleTheme()" class="px-2.5 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs text-neutral-400" title="Toggle UI Color Mode">
                     <i id="theme-toggle-icon" class="fa-solid fa-moon"></i>
                 </button>
-                <button onclick="switchTab('reports')" id="nav-btn-reports" class="px-3 py-1.5 text-xs font-bold bg-[#f39c12] hover:bg-orange-500 text-white rounded-md transition-all">
+                <!-- Adaptive Toggle Navigation Button -->
+                <button id="header-nav-toggle-btn" onclick="toggleMainTabs()" class="px-3 py-1.5 text-xs font-bold bg-[#f39c12] hover:bg-orange-500 text-white rounded-md transition-all">
                     Bill Report
-                </button>
-                <button onclick="switchTab('pos')" id="nav-btn-pos" class="px-3 py-1.5 text-xs font-bold bg-[#2ecc71] hover:bg-green-600 text-white rounded-md transition-all">
-                    Quick Bill
                 </button>
             </div>
         </div>
@@ -291,7 +291,7 @@
 
     <!-- Add/Edit Product Modal Dialog -->
     <div id="product-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/85 backdrop-blur-xs" onclick="closeProductModal()"></div>
+        <div class="fixed inset-0 bg-black/85" onclick="closeProductModal()"></div>
         <div class="bg-[#1a1a1a] border border-neutral-800 rounded-lg max-w-sm w-full p-5 relative z-10 text-xs">
             <h3 id="product-modal-title" class="text-sm font-bold text-white uppercase tracking-wider mb-3">Add Product Form</h3>
             <form onsubmit="handleProductFormSubmit(event)" class="space-y-3">
@@ -378,953 +378,514 @@
         </div>
     </div>
 
-    <!-- Instructions Modal for iOS and Desktop installation -->
-    <div id="pwa-instructions-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/80" onclick="closePwaInstructions()"></div>
-        <div class="bg-[#1a1a1a] border border-neutral-800 rounded-lg max-w-xs w-full p-5 relative z-10 text-center">
-            <i class="fa-solid fa-circle-info text-2xl text-orange-400 mb-2"></i>
-            <h4 class="text-xs font-black text-white uppercase tracking-wider">App Installation Help</h4>
-            <p class="text-[11px] text-neutral-400 mt-2 mb-4 leading-relaxed">
-                To run this POS as a fullscreen application on your home screen:<br><br>
-                <span class="text-white font-bold">On Android (Chrome)</span>: Tap the browser menu (<i class="fa-solid fa-ellipsis-vertical"></i>) -> select <span class="text-orange-400">Add to Home screen</span>.<br><br>
-                <span class="text-white font-bold">On iPad/iPhone (Safari)</span>: Tap Share button (<i class="fa-solid fa-square-share-nodes"></i>) -> select <span class="text-orange-400">Add to Home Screen</span>.
-            </p>
-            <button onclick="closePwaInstructions()" class="w-full bg-[#333333] hover:bg-[#444444] text-white font-black py-2 rounded text-xs uppercase">
-                Got It
-            </button>
-        </div>
-    </div>
+    <!-- Hidden Printable iFrame Target for pristine thermal receipt styling -->
+    <iframe id="thermal-print-iframe" class="hidden"></iframe>
 
-    <!-- Sandboxed Hidden Framing Elements for Printing operations -->
-    <iframe id="print-iframe" class="hidden" style="width:0; height:0; position:absolute; left:-9999px;"></iframe>
-
-    <!-- ==================== CORE SYSTEM CONTROLLER LOGIC ==================== -->
+    <!-- ==================== LOGIC DRIVER SCRIPTS ==================== -->
     <script>
-        // System variables
+        
+        // Exact seeded database extracted from "Your paragraph text (4).pdf"
+        const defaultCategories = [
+            { id: "hot-bev", name: "HOT BEVERAGES" },
+            { id: "quick-bite", name: "QUICK BITES" },
+            { id: "fresh-juice", name: "FRESH JUICE" },
+            { id: "fruit-shake", name: "FRUIT MILKSHAKE" },
+            { id: "cocktail", name: "COCKTAILS" },
+            { id: "shakes", name: "MILKSHAKES & SPECIALS" },
+            { id: "soda", name: "SODAS" },
+            { id: "mocktail", name: "MOCKTAILS" },
+            { id: "soup", name: "SOUPS" },
+            { id: "specials", name: "CHILL OUT SPECIALS" },
+            { id: "chats", name: "CHATS (AFTER 3 PM)" },
+            { id: "biriyani", name: "BIRIYANI" },
+            { id: "main-course", name: "MAIN COURSE" },
+            { id: "alfaham", name: "AL-FAHAM" },
+            { id: "falooda", name: "FALOODAS" }
+        ];
+
+        const defaultProducts = [
+            // Hot Beverages
+            { id: "p1", name: "TEA", category: "hot-bev", price: 12 },
+            { id: "p2", name: "COFFEE", category: "hot-bev", price: 15 },
+            { id: "p3", name: "HORLICKS", category: "hot-bev", price: 15 },
+            { id: "p4", name: "BOOST", category: "hot-bev", price: 15 },
+            { id: "p5", name: "BADAM MILK", category: "hot-bev", price: 15 },
+            
+            // Quick Bites
+            { id: "p6", name: "FRENCH FRIES", category: "quick-bite", price: 50 },
+            { id: "p7", name: "BREAD OMELET SP", category: "quick-bite", price: 60 },
+            { id: "p8", name: "CHICKEN BURGER", category: "quick-bite", price: 90 },
+            { id: "p9", name: "CHICKEN SANDWICH SP", category: "quick-bite", price: 70 },
+            { id: "p10", name: "CHICKEN SANDWICH", category: "quick-bite", price: 50 },
+            { id: "p11", name: "CHICKEN NUGGETS", category: "quick-bite", price: 90 },
+            
+            // Fresh Juice
+            { id: "p12", name: "PINEAPPLE JUICE", category: "fresh-juice", price: 50 },
+            { id: "p13", name: "ORANGE JUICE", category: "fresh-juice", price: 50 },
+            { id: "p14", name: "GRAPE JUICE", category: "fresh-juice", price: 50 },
+            { id: "p15", name: "APPLE JUICE", category: "fresh-juice", price: 50 },
+            { id: "p16", name: "MOSAMBI JUICE", category: "fresh-juice", price: 50 },
+            { id: "p17", name: "SUGARCANE JUICE", category: "fresh-juice", price: 30 },
+            { id: "p18", name: "LEMON JUICE", category: "fresh-juice", price: 20 },
+            { id: "p19", name: "LICHIE LIME", category: "fresh-juice", price: 30 },
+            { id: "p20", name: "BLUEBERRY LIME", category: "fresh-juice", price: 30 },
+            { id: "p21", name: "MINT LIME", category: "fresh-juice", price: 30 },
+            { id: "p22", name: "LASSI", category: "fresh-juice", price: 30 },
+            
+            // Fruit Milkshakes
+            { id: "p23", name: "APPLE MILKSHAKE", category: "fruit-shake", price: 70 },
+            { id: "p24", name: "AVOCADO MILKSHAKE", category: "fruit-shake", price: 70 },
+            { id: "p25", name: "JACK FRUIT MILKSHAKE", category: "fruit-shake", price: 70 },
+            { id: "p26", name: "CHIKKU MILKSHAKE", category: "fruit-shake", price: 70 },
+            { id: "p27", name: "DRAGON FRUIT MILKSHAKE", category: "fruit-shake", price: 70 },
+            { id: "p28", name: "MANGO MILKSHAKE", category: "fruit-shake", price: 70 },
+
+            // Cocktails
+            { id: "p29", name: "VIRGIN MOJITO", category: "cocktail", price: 60 },
+            { id: "p30", name: "CITRUS SPARKLER", category: "cocktail", price: 60 },
+            { id: "p31", name: "GINGER LEMON FIZZ", category: "cocktail", price: 60 },
+            { id: "p32", name: "ORANGE BASIL COOLER", category: "cocktail", price: 60 },
+            { id: "p33", name: "STRAWBERRY BREEZE", category: "cocktail", price: 70 },
+            
+            // Milkshakes & Specials
+            { id: "p34", name: "OREO MILKSHAKE", category: "shakes", price: 70 },
+            { id: "p35", name: "KITKAT MILKSHAKE", category: "shakes", price: 70 },
+            { id: "p36", name: "DAIRY MILKSHAKE", category: "shakes", price: 70 },
+            { id: "p37", name: "SHARJAH SHAKE", category: "shakes", price: 70 },
+            { id: "p38", name: "BUTTER SCOTCH SHAKE", category: "shakes", price: 70 },
+            { id: "p39", name: "CHOCO BOOST SHAKE", category: "shakes", price: 70 },
+            { id: "p40", name: "RASPBERRY MILKSHAKE", category: "shakes", price: 70 },
+            { id: "p41", name: "TENDER MANGO", category: "shakes", price: 70 },
+            { id: "p42", name: "TWISTER SPECIAL", category: "shakes", price: 80 },
+            { id: "p43", name: "BLACKCURRANT SHAKE", category: "shakes", price: 70 },
+            { id: "p44", name: "BLUEBERRY SHAKE", category: "shakes", price: 70 },
+            { id: "p45", name: "TENDER COCONUT SHAKE", category: "shakes", price: 70 },
+            
+            // Sodas
+            { id: "p46", name: "LIME SODA", category: "soda", price: 20 },
+            { id: "p47", name: "GINGER SODA", category: "soda", price: 25 },
+            { id: "p48", name: "CHILLY SODA", category: "soda", price: 25 },
+            { id: "p49", name: "JEERA SODA", category: "soda", price: 25 },
+
+            // Mocktails
+            { id: "p50", name: "WILD BLUEBERRY", category: "mocktail", price: 60 },
+            { id: "p51", name: "BLUE LAGOON", category: "mocktail", price: 60 },
+            { id: "p52", name: "LIMETTE MOCKTAIL", category: "mocktail", price: 60 },
+            { id: "p53", name: "STRAWBERRY MOCKTAIL", category: "mocktail", price: 60 },
+            { id: "p54", name: "GREEN APPLE MOCKTAIL", category: "mocktail", price: 60 },
+            { id: "p55", name: "LIME MINT MOCKTAIL", category: "mocktail", price: 60 },
+            { id: "p56", name: "PINEAPPLE MOCKTAIL", category: "mocktail", price: 60 },
+            { id: "p57", name: "PASSIONFRUIT MOCKTAIL", category: "mocktail", price: 60 },
+            { id: "p58", name: "RASPBERRY MOCKTAIL", category: "mocktail", price: 60 },
+            { id: "p59", name: "BLACK FOREST MOCKTAIL", category: "mocktail", price: 60 },
+
+            // Soups
+            { id: "p60", name: "TOMATO SOUP", category: "soup", price: 60 },
+            { id: "p61", name: "SWEET CORN SOUP", category: "soup", price: 60 },
+            { id: "p62", name: "CHICKEN SOUP", category: "soup", price: 60 },
+            { id: "p63", name: "MUTTON SOUP", category: "soup", price: 60 },
+
+            // Chill Out Specials
+            { id: "p64", name: "CHICKEN MOMOS (8 PCS)", category: "specials", price: 120 },
+            { id: "p65", name: "CHICKEN MOMOS (4 PCS)", category: "specials", price: 65 },
+            { id: "p66", name: "SCHEZWAN MOMOS (8 PCS)", category: "specials", price: 140 },
+            { id: "p67", name: "SCHEZWAN MOMOS (4 PCS)", category: "specials", price: 75 },
+            { id: "p68", name: "CHILLI PAROTTA EGG", category: "specials", price: 80 },
+            { id: "p69", name: "CHILLI PAROTTA CHICKEN", category: "specials", price: 100 },
+
+            // Chats
+            { id: "p70", name: "PANI PURI", category: "chats", price: 50 },
+            { id: "p71", name: "SOYA CHAT", category: "chats", price: 50 },
+            { id: "p72", name: "MASALA PURI", category: "chats", price: 50 },
+            { id: "p73", name: "DHAHI PURI", category: "chats", price: 50 },
+            { id: "p74", name: "CAULIFLOWER CHAT", category: "chats", price: 50 },
+            { id: "p75", name: "MIXING CHAT", category: "chats", price: 50 },
+            { id: "p76", name: "BROST STRIPS", category: "chats", price: 150 },
+            { id: "p77", name: "LOADED FRIES", category: "chats", price: 150 },
+            { id: "p78", name: "CHICKEN WRAPS", category: "chats", price: 70 },
+
+            // Biriyani
+            { id: "p79", name: "CHICKEN BIRIYANI", category: "biriyani", price: 120 },
+            { id: "p80", name: "CHICKEN BIRIYANI HALF", category: "biriyani", price: 80 },
+            { id: "p81", name: "HALF BIRIYANI WITH EGG", category: "biriyani", price: 90 },
+            { id: "p82", name: "KUSKA", category: "biriyani", price: 70 },
+            { id: "p83", name: "CHICKEN 65 FULL", category: "biriyani", price: 200 },
+            { id: "p84", name: "CHICKEN 65 HALF", category: "biriyani", price: 140 },
+            { id: "p85", name: "CHICKEN 65 QUARTER", category: "biriyani", price: 80 },
+
+            // Main Course
+            { id: "p86", name: "CHICKEN FRIED RICE", category: "main-course", price: 110 },
+            { id: "p87", name: "CHICKEN NOODLES", category: "main-course", price: 110 },
+            { id: "p88", name: "EGG FRIED RICE", category: "main-course", price: 80 },
+            { id: "p89", name: "EGG NOODLES", category: "main-course", price: 80 },
+            { id: "p90", name: "VEG FRIED RICE", category: "main-course", price: 90 },
+            { id: "p91", name: "VEG NOODLES", category: "main-course", price: 90 },
+            { id: "p92", name: "SCHEZWAN NOODLES", category: "main-course", price: 120 },
+
+            // Al-Faham
+            { id: "p93", name: "NORMAL AL-FAHAM FULL", category: "alfaham", price: 450 },
+            { id: "p94", name: "NORMAL AL-FAHAM HALF", category: "alfaham", price: 250 },
+            { id: "p95", name: "NORMAL AL-FAHAM QTR", category: "alfaham", price: 130 },
+            { id: "p96", name: "PERI PERI AL-FAHAM FULL", category: "alfaham", price: 480 },
+            { id: "p97", name: "PERI PERI AL-FAHAM HALF", category: "alfaham", price: 260 },
+            { id: "p98", name: "PERI PERI AL-FAHAM QTR", category: "alfaham", price: 135 },
+            { id: "p99", name: "KANTHARI AL-FAHAM FULL", category: "alfaham", price: 480 },
+            { id: "p100", name: "KANTHARI AL-FAHAM HALF", category: "alfaham", price: 260 },
+            { id: "p101", name: "KANTHARI AL-FAHAM QTR", category: "alfaham", price: 135 },
+
+            // Faloodas
+            { id: "p102", name: "ROYAL FALOODA", category: "falooda", price: 120 },
+            { id: "p103", name: "STANDARD FALOODA", category: "falooda", price: 90 }
+        ];
+
+
+        // Global State Store with memory fail-safes (resolves iframe storage issues)
         let categories = [];
         let products = [];
         let cart = [];
         let transactions = [];
-        let templateConfig = {};
+        let currentEditingOrderIndex = null; // Keeps track of edited transaction logs to avoid duplicates
 
-        let activeCategory = "all";
-        let activeTab = "pos";
-        let currentEditTicketId = null; 
-        let pendingTxRecord = null;
-        let confirmResolve = null;
-        let selectedCartItemIdx = null;
-
-        // Extracting all product entries verbatim from: "Your paragraph text (4).pdf"
-        const defaultCategories = [
-            { id: "cat-bev", name: "Hot Beverages" },
-            { id: "cat-bites", name: "Quick Bites" },
-            { id: "cat-juice", name: "Fresh Juice" },
-            { id: "cat-fruit-shake", name: "Fruit Milkshakes" },
-            { id: "cat-cocktail", name: "Cocktails" },
-            { id: "cat-shakes", name: "Milkshakes" },
-            { id: "cat-soda", name: "Sodas" },
-            { id: "cat-mock", name: "Mocktails" },
-            { id: "cat-soup", name: "Soups" },
-            { id: "cat-specials", name: "Specials" },
-            { id: "cat-chats", name: "Chats" },
-            { id: "cat-biriyani", name: "Biriyani" },
-            { id: "cat-main", name: "Main Course" },
-            { id: "cat-alfaham", name: "Al-Faham & Mandi" },
-            { id: "cat-falooda", name: "Faloodas" }
-        ];
-
-        const defaultProducts = [
-            // Page 1: Hot Beverages
-            { id: "p-bev-1", name: "Tea", categoryId: "cat-bev", price: 12 },
-            { id: "p-bev-2", name: "Coffee", categoryId: "cat-bev", price: 15 },
-            { id: "p-bev-3", name: "Horlicks", categoryId: "cat-bev", price: 15 },
-            { id: "p-bev-4", name: "Boost", categoryId: "cat-bev", price: 15 },
-            { id: "p-bev-5", name: "Badam Milk", categoryId: "cat-bev", price: 15 },
-            { id: "p-bev-6", name: "AVIL MILK SP", categoryId: "cat-bev", price: 60 },
-            // Page 1: Quick Bites
-            { id: "p-bit-1", name: "French Fries", categoryId: "cat-bites", price: 50 },
-            { id: "p-bit-2", name: "Bread Omelet sp", categoryId: "cat-bites", price: 60 },
-            { id: "p-bit-3", name: "Chicken Burger", categoryId: "cat-bites", price: 90 },
-            { id: "p-bit-4", name: "Chicken Sandwich (sp)", categoryId: "cat-bites", price: 70 },
-            { id: "p-bit-5", name: "Chicken Sandwich", categoryId: "cat-bites", price: 50 },
-            { id: "p-bit-6", name: "Chicken Nuggets", categoryId: "cat-bites", price: 90 },
-            // Page 2: Fresh Juice
-            { id: "p-juc-1", name: "Pine Apple", categoryId: "cat-juice", price: 50 },
-            { id: "p-juc-2", name: "Orange", categoryId: "cat-juice", price: 50 },
-            { id: "p-juc-3", name: "Grape", categoryId: "cat-juice", price: 50 },
-            { id: "p-juc-4", name: "Apple", categoryId: "cat-juice", price: 50 },
-            { id: "p-juc-5", name: "Mosambi", categoryId: "cat-juice", price: 50 },
-            { id: "p-juc-6", name: "Sugarcane", categoryId: "cat-juice", price: 30 },
-            { id: "p-juc-7", name: "Lemon Juice", categoryId: "cat-juice", price: 20 },
-            { id: "p-juc-8", name: "Lichie Lime", categoryId: "cat-juice", price: 30 },
-            { id: "p-juc-9", name: "Blueberry Lime", categoryId: "cat-juice", price: 30 },
-            { id: "p-juc-10", name: "Mint Lime", categoryId: "cat-juice", price: 30 },
-            { id: "p-juc-11", name: "Lassi", categoryId: "cat-juice", price: 30 },
-            // Page 2: Fruit Milkshakes
-            { id: "p-frs-1", name: "Apple Milkshake", categoryId: "cat-fruit-shake", price: 70 },
-            { id: "p-frs-2", name: "Avocado Milkshake", categoryId: "cat-fruit-shake", price: 70 },
-            { id: "p-frs-3", name: "Jack Fruit Milkshake", categoryId: "cat-fruit-shake", price: 70 },
-            { id: "p-frs-4", name: "Chikku Milkshake", categoryId: "cat-fruit-shake", price: 70 },
-            { id: "p-frs-5", name: "Dragon Fruit Milkshake", categoryId: "cat-fruit-shake", price: 70 },
-            { id: "p-frs-6", name: "Mango Milkshake", categoryId: "cat-fruit-shake", price: 70 },
-            // Page 3: Cocktails
-            { id: "p-cok-1", name: "Virgin Mojito", categoryId: "cat-cocktail", price: 120 },
-            { id: "p-cok-2", name: "Citrus Sparkler", categoryId: "cat-cocktail", price: 125 },
-            { id: "p-cok-3", name: "Ginger Lemon Fizz", categoryId: "cat-cocktail", price: 125 },
-            { id: "p-cok-4", name: "Orange Basil Cooler", categoryId: "cat-cocktail", price: 120 },
-            { id: "p-cok-5", name: "Strawberry Breeze", categoryId: "cat-cocktail", price: 130 },
-            // Page 4: Milkshakes
-            { id: "p-shk-1", name: "Oreo Milkshake", categoryId: "cat-shakes", price: 70 },
-            { id: "p-shk-2", name: "Kitkat Milkshake", categoryId: "cat-shakes", price: 70 },
-            { id: "p-shk-3", name: "Dairy Milkshake", categoryId: "cat-shakes", price: 70 },
-            { id: "p-shk-4", name: "Sharjah Shake", categoryId: "cat-shakes", price: 70 },
-            { id: "p-shk-5", name: "Butter Scotch", categoryId: "cat-shakes", price: 70 },
-            { id: "p-shk-6", name: "Choco Boost", categoryId: "cat-shakes", price: 70 },
-            { id: "p-shk-7", name: "Rashberry Milkshake", categoryId: "cat-shakes", price: 70 },
-            { id: "p-shk-8", name: "Tender Mango", categoryId: "cat-shakes", price: 70 },
-            { id: "p-shk-9", name: "Twister sp (Str/Ban/App)", categoryId: "cat-shakes", price: 80 },
-            { id: "p-shk-10", name: "Blackcurrant Shake", categoryId: "cat-shakes", price: 70 },
-            { id: "p-shk-11", name: "Blueberry Shake", categoryId: "cat-shakes", price: 70 },
-            { id: "p-shk-12", name: "Tender Coconut", categoryId: "cat-shakes", price: 70 },
-            { id: "p-shk-13", name: "Extra Ice Scoop", categoryId: "cat-shakes", price: 10 },
-            // Page 4: Sodas
-            { id: "p-sda-1", name: "Lime Soda", categoryId: "cat-soda", price: 20 },
-            { id: "p-sda-2", name: "Ginger Soda", categoryId: "cat-soda", price: 25 },
-            { id: "p-sda-3", name: "Chilly Soda", categoryId: "cat-soda", price: 25 },
-            { id: "p-sda-4", name: "Jeera Soda", categoryId: "cat-soda", price: 25 },
-            // Page 5: Mocktails
-            { id: "p-mok-1", name: "Wild Blueberry", categoryId: "cat-mock", price: 60 },
-            { id: "p-mok-2", name: "Blue Lagoon", categoryId: "cat-mock", price: 60 },
-            { id: "p-mok-3", name: "Limette Mocktail", categoryId: "cat-mock", price: 60 },
-            { id: "p-mok-4", name: "Strawberry Mocktail", categoryId: "cat-mock", price: 60 },
-            { id: "p-mok-5", name: "Green Apple Mocktail", categoryId: "cat-mock", price: 60 },
-            { id: "p-mok-6", name: "Lime & Mint Mocktail", categoryId: "cat-mock", price: 60 },
-            { id: "p-mok-7", name: "Pineapple Mocktail", categoryId: "cat-mock", price: 60 },
-            { id: "p-mok-8", name: "Passionfruit", categoryId: "cat-mock", price: 60 },
-            { id: "p-mok-9", name: "Rashberry Mock", categoryId: "cat-mock", price: 60 },
-            { id: "p-mok-10", name: "Black Forest", categoryId: "cat-mock", price: 60 },
-            // Page 5: Soups
-            { id: "p-sop-1", name: "Tomato Soup", categoryId: "cat-soup", price: 60 },
-            { id: "p-sop-2", name: "Sweet Corn Soup", categoryId: "cat-soup", price: 60 },
-            { id: "p-sop-3", name: "Chicken Soup", categoryId: "cat-soup", price: 60 },
-            { id: "p-sop-4", name: "Mutton Soup", categoryId: "cat-soup", price: 60 },
-            // Page 6 & 7: Specials
-            { id: "p-spc-1", name: "Chicken Momos(8 pcs)", categoryId: "cat-specials", price: 130 },
-            { id: "p-spc-2", name: "Chicken Momos(4 pcs)", categoryId: "cat-specials", price: 70 },
-            { id: "p-spc-3", name: "Schezwan Momos", categoryId: "cat-specials", price: 150 },
-            { id: "p-spc-4", name: "Chilli Parotta Egg", categoryId: "cat-specials", price: 100 },
-            { id: "p-spc-5", name: "Chilli Parotta Chicken", categoryId: "cat-specials", price: 120 },
-            { id: "p-spc-6", name: "Broast Strips", categoryId: "cat-specials", price: 150 },
-            { id: "p-spc-7", name: "Loaded Fries", categoryId: "cat-specials", price: 150 },
-            { id: "p-spc-8", name: "Chicken Wraps", categoryId: "cat-specials", price: 70 },
-            // Page 6 & 7: Chats
-            { id: "p-cht-1", name: "Pani Puri", categoryId: "cat-chats", price: 50 },
-            { id: "p-cht-2", name: "Soya", categoryId: "cat-chats", price: 50 },
-            { id: "p-cht-3", name: "Masala Puri", categoryId: "cat-chats", price: 50 },
-            { id: "p-cht-4", name: "Dhahi Puri", categoryId: "cat-chats", price: 50 },
-            { id: "p-cht-5", name: "Cauliflower", categoryId: "cat-chats", price: 50 },
-            { id: "p-cht-6", name: "Mixing", categoryId: "cat-chats", price: 50 },
-            // Page 8: Biriyani
-            { id: "p-bir-1", name: "Chicken Biriyani", categoryId: "cat-biriyani", price: 120 },
-            { id: "p-bir-2", name: "Chicken Biriyani Half", categoryId: "cat-biriyani", price: 80 },
-            { id: "p-bir-3", name: "Half With Egg", categoryId: "cat-biriyani", price: 90 },
-            { id: "p-bir-4", name: "Kuska", categoryId: "cat-biriyani", price: 70 },
-            { id: "p-bir-5", name: "Chicken 65 Full", categoryId: "cat-biriyani", price: 200 },
-            { id: "p-bir-6", name: "Chicken 65 Half", categoryId: "cat-biriyani", price: 140 },
-            { id: "p-bir-7", name: "Chicken 65 Quarter", categoryId: "cat-biriyani", price: 80 },
-            // Page 8: Main Course
-            { id: "p-mn-1", name: "Chicken Fried Rice Full", categoryId: "cat-main", price: 110 },
-            { id: "p-mn-2", name: "Chicken Noodles", categoryId: "cat-main", price: 110 },
-            { id: "p-mn-3", name: "Egg Fried Rice", categoryId: "cat-main", price: 80 },
-            { id: "p-mn-4", name: "Egg Noodles", categoryId: "cat-main", price: 80 },
-            { id: "p-mn-5", name: "Veg Fried Rice", categoryId: "cat-main", price: 90 },
-            { id: "p-mn-6", name: "Veg Noodles", categoryId: "cat-main", price: 90 },
-            { id: "p-mn-7", name: "Schezwan Noodles", categoryId: "cat-main", price: 120 },
-            // Page 9: Al-Faham & Mandi
-            { id: "p-alf-1", name: "Normal Full", categoryId: "cat-alfaham", price: 450 },
-            { id: "p-alf-2", name: "Normal Half", categoryId: "cat-alfaham", price: 250 },
-            { id: "p-alf-3", name: "Normal Quarter", categoryId: "cat-alfaham", price: 130 },
-            { id: "p-alf-4", name: "Peri Peri Full", categoryId: "cat-alfaham", price: 480 },
-            { id: "p-alf-5", name: "Peri Peri Half", categoryId: "cat-alfaham", price: 260 },
-            { id: "p-alf-6", name: "Peri Peri Quarter", categoryId: "cat-alfaham", price: 135 },
-            { id: "p-alf-7", name: "Kanthari Full", categoryId: "cat-alfaham", price: 480 },
-            { id: "p-alf-8", name: "Kanthari Half", categoryId: "cat-alfaham", price: 260 },
-            { id: "p-alf-9", name: "Kanthari Quarter", categoryId: "cat-alfaham", price: 135 },
-            { id: "p-mnd-1", name: "Mandi Normal Full", categoryId: "cat-alfaham", price: 750 },
-            { id: "p-mnd-2", name: "Mandi Normal Half", categoryId: "cat-alfaham", price: 400 },
-            { id: "p-mnd-3", name: "Mandi Normal Quarter", categoryId: "cat-alfaham", price: 200 },
-            { id: "p-mnd-4", name: "Mandi Peri Full", categoryId: "cat-alfaham", price: 800 },
-            { id: "p-mnd-5", name: "Mandi Peri Half", categoryId: "cat-alfaham", price: 420 },
-            { id: "p-mnd-6", name: "Mandi Peri Quarter", categoryId: "cat-alfaham", price: 200 },
-            { id: "p-mnd-7", name: "Mandi Kanthari Full", categoryId: "cat-alfaham", price: 800 },
-            { id: "p-mnd-8", name: "Mandi Kanthari Half", categoryId: "cat-alfaham", price: 420 },
-            { id: "p-mnd-9", name: "Mandi Kanthari Quarter", categoryId: "cat-alfaham", price: 210 },
-            // Page 9: Faloodas
-            { id: "p-fal-1", name: "Royal Falooda", categoryId: "cat-falooda", price: 120 },
-            { id: "p-fal-2", name: "Falooda", categoryId: "cat-falooda", price: 90 }
-        ];
-
-        const defaultTemplate = {
-            shopName: "CHILL OUT CAFE & RESTAURANT",
-            tagline: "REFRESHING & HEALTHY",
-            address: "Chill Out Cafe, Gudalur, TN",
-            phone: "+91 9876543210",
-            paperWidth: "58mm",
-            fontSize: "12px",
-            lineHeight: "1.4",
-            footerMessage: "Thank you! Visit again."
-        };
-
-        function safeGetItem(key, defaultVal) {
+        // Safe storage drivers wrapping local storage calls
+        function safeGetItem(key) {
             try {
-                const val = localStorage.getItem(key);
-                if (val === null || val === undefined || val === "") return defaultVal;
-                const parsed = JSON.parse(val);
-                if (Array.isArray(defaultVal) && !Array.isArray(parsed)) return defaultVal;
-                return parsed;
+                return localStorage.getItem(key);
             } catch (e) {
-                return defaultVal;
+                console.warn("Storage warning: Access blocked. Using in-memory fallback.", e);
+                return null;
             }
         }
 
-        function safeSetItem(key, val) {
+        function safeSetItem(key, value) {
             try {
-                localStorage.setItem(key, JSON.stringify(val));
-            } catch (e) {}
+                localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+            } catch (e) {
+                console.warn("Storage warning: Unable to save to device registry.", e);
+            }
         }
 
-        // Initialize App states
-        function initApp() {
-            // FORCE HARD-RESET DIAGNOSTIC TO OVERRIDE CORRUPT OR OUTDATED SCHEMA CACHE ON GITHUB PAGES
-            const cacheBusterVersion = "chill_out_ver_2_5_stable";
-            const installedVersion = localStorage.getItem("chill_out_active_ver");
-            
-            if (installedVersion !== cacheBusterVersion) {
-                // Wipe previous legacy arrays to enforce preloading the complete updated PDF menu catalog
-                localStorage.removeItem("chill_out_categories");
-                localStorage.removeItem("chill_out_products");
-                localStorage.setItem("chill_out_active_ver", cacheBusterVersion);
+        // PWA Installation deferred prompt storage hook
+        let deferredInstallPrompt = null;
+
+        // Custom alert state registers
+        let activeConfirmCallback = null;
+        let activePrintVerifyCallback = null;
+
+        // Active UI flow control toggle
+        let activeTab = "pos"; // 'pos' or 'reports'
+        let activeCategoryFilter = "ALL";
+        let activeSearchQuery = "";
+
+        // DOM Initializer trigger
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check for service worker capabilities and try registering sw.js
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js').then((reg) => {
+                    console.log('PWA Service Worker connected:', reg.scope);
+                }).catch((err) => {
+                    console.log('Local SW registration bypassed (PWA standalone mode running over dynamic wrapper)');
+                });
             }
 
-            categories = safeGetItem("chill_out_categories", defaultCategories);
-            products = safeGetItem("chill_out_products", defaultProducts);
-            transactions = safeGetItem("chill_out_transactions", []);
-            templateConfig = safeGetItem("chill_out_template", defaultTemplate);
-
-            // Restore light/dark theme preference
-            const isDark = safeGetItem("chill_out_dark_theme", true);
-            if (isDark) {
-                document.documentElement.classList.add('dark');
-                document.getElementById('theme-toggle-icon').className = "fa-solid fa-sun text-yellow-400";
-            } else {
-                document.documentElement.classList.remove('dark');
-                document.getElementById('theme-toggle-icon').className = "fa-solid fa-moon text-neutral-400";
-            }
-
-            // Bind global ESC key shortcut & input focuses
-            document.addEventListener('keydown', (e) => {
-                if (e.key === '/' && document.activeElement !== document.getElementById('pos-search-input')) {
-                    e.preventDefault();
-                    toggleSearchOverlay(true);
-                }
-            });
-
-            // Initialize Progressive Web App Installer Hook
-            initPwaInstaller();
-
-            refreshAllUI();
-        }
-
-        let deferredPrompt = null;
-        function initPwaInstaller() {
-            const btn = document.getElementById('pwa-install-btn');
-            
+            // Bind PWA trigger event listeners
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
-                deferredPrompt = e;
-                btn.classList.remove('hidden');
+                deferredInstallPrompt = e;
+                const installBtn = document.getElementById('pwa-install-btn');
+                if (installBtn) installBtn.classList.remove('hidden');
             });
 
-            btn.addEventListener('click', async () => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    const { outcome } = await deferredPrompt.userChoice;
-                    if (outcome === 'accepted') {
-                        btn.classList.add('hidden');
+            const installBtn = document.getElementById('pwa-install-btn');
+            if (installBtn) {
+                installBtn.addEventListener('click', async () => {
+                    if (deferredInstallPrompt) {
+                        deferredInstallPrompt.prompt();
+                        const { outcome } = await deferredInstallPrompt.userChoice;
+                        if (outcome === 'accepted') {
+                            console.log('User accepted POS software deployment');
+                        }
+                        deferredInstallPrompt = null;
+                        installBtn.classList.add('hidden');
+                    } else {
+                        showCustomAlert("PWA Manual Installation", "To install, tap your browser's share icon & select 'Add to Home Screen'!");
                     }
-                    deferredPrompt = null;
-                } else {
-                    // Fallback visual instruction dialogue for Safari / Manual installs
-                    document.getElementById('pwa-instructions-modal').classList.remove('hidden');
+                });
+            }
+
+            // Populate system state
+            loadStateData();
+            
+            // Build elements
+            renderCategoryFilters();
+            renderPOSCatalog();
+            renderAddedCartRows();
+            renderReportsLedger();
+
+            // Set up key controls (Focus search on '/')
+            document.addEventListener('keydown', (e) => {
+                if (e.key === '/') {
+                    const searchBar = document.getElementById('pos-search-input');
+                    const searchOverlay = document.getElementById('search-overlay');
+                    if (searchBar && searchOverlay) {
+                        e.preventDefault();
+                        searchOverlay.classList.remove('hidden');
+                        searchBar.focus();
+                    }
                 }
             });
-        }
+        });
 
-        function closePwaInstructions() {
-            document.getElementById('pwa-instructions-modal').classList.add('hidden');
-        }
-
-        function toggleTheme() {
-            const hasDark = document.documentElement.classList.toggle('dark');
-            safeSetItem("chill_out_dark_theme", hasDark);
-            const icon = document.getElementById('theme-toggle-icon');
-            if (hasDark) {
-                icon.className = "fa-solid fa-sun text-yellow-400";
+        // Initialize state variables from safe storage cache or seed defaults
+        function loadStateData() {
+            // Categories
+            const cachedCats = safeGetItem("chill_categories");
+            if (cachedCats) {
+                categories = JSON.parse(cachedCats);
             } else {
-                icon.className = "fa-solid fa-moon text-neutral-400";
+                categories = defaultCategories;
+                safeSetItem("chill_categories", categories);
             }
-        }
 
-        function refreshAllUI() {
-            renderPOSCategories();
-            filterPOSMenu();
-            renderCart();
-            renderReportsLedger();
-        }
-
-        function switchTab(tabId) {
-            activeTab = tabId;
-            document.querySelectorAll('.tab-view').forEach(view => view.classList.add('hidden'));
-            
-            document.getElementById(`view-${tabId}`).classList.remove('hidden');
-            
-            // Adjust header indicator
-            const appFlowTitle = document.getElementById('app-flow-title');
-            if (tabId === 'pos') {
-                appFlowTitle.innerText = currentEditTicketId ? `Updating Draft: ${currentEditTicketId}` : "Item Wise Bill";
-            } else if (tabId === 'reports') {
-                appFlowTitle.innerText = "Ledger Reports";
-            }
-            refreshAllUI();
-        }
-
-        function showAlert(title, message, isSuccess = true) {
-            document.getElementById('alert-title').innerText = title;
-            document.getElementById('alert-message').innerText = message;
-            const icon = document.getElementById('alert-icon');
-            if (isSuccess) {
-                icon.className = "fa-solid fa-circle-check text-2xl text-emerald-500 mb-2";
+            // Products
+            const cachedProds = safeGetItem("chill_products");
+            if (cachedProds) {
+                products = JSON.parse(cachedProds);
             } else {
-                icon.className = "fa-solid fa-circle-xmark text-2xl text-red-500 mb-2";
+                products = defaultProducts;
+                safeSetItem("chill_products", products);
             }
-            document.getElementById('alert-modal').classList.remove('hidden');
-        }
 
-        function closeAlert() {
-            document.getElementById('alert-modal').classList.add('hidden');
-        }
+            // Transactions
+            const cachedTxs = safeGetItem("chill_transactions");
+            if (cachedTxs) {
+                transactions = JSON.parse(cachedTxs);
+            } else {
+                transactions = [];
+                safeSetItem("chill_transactions", transactions);
+            }
 
-        function showConfirm(message) {
-            document.getElementById('confirm-message').innerText = message;
-            document.getElementById('confirm-modal').classList.remove('hidden');
-            return new Promise((resolve) => {
-                confirmResolve = resolve;
-            });
-        }
-
-        function closeConfirm(outcome) {
-            document.getElementById('confirm-modal').classList.add('hidden');
-            if (confirmResolve) {
-                confirmResolve(outcome);
-                confirmResolve = null;
+            // Ensure categories selectors are seeded inside modals
+            const categorySelect = document.getElementById('form-prod-category');
+            if (categorySelect) {
+                categorySelect.innerHTML = categories.map(cat => 
+                    `<option value="${cat.id}">${cat.name}</option>`
+                ).join('');
             }
         }
 
-        // ==================== POS SYSTEM CONTROLLERS ====================
-        function renderPOSCategories() {
-            const slider = document.getElementById('pos-category-filters');
-            if (!slider) return;
-            slider.innerHTML = `
-                <button onclick="setCategoryFilter('all')" class="px-4 py-2 text-[11px] font-black tracking-wider rounded uppercase transition-all shrink-0 ${activeCategory === 'all' ? 'bg-[#e67e22] text-white font-black' : 'bg-[#222222] text-neutral-300'}">
-                    ALL
-                </button>
-            `;
+        // Switch main views (Dynamic smart toggle in top header)
+        function toggleMainTabs() {
+            const headerBtn = document.getElementById('header-nav-toggle-btn');
+            const viewPOS = document.getElementById('view-pos');
+            const viewReports = document.getElementById('view-reports');
+            const flowTitle = document.getElementById('app-flow-title');
+
+            if (activeTab === "pos") {
+                activeTab = "reports";
+                viewPOS.classList.add('hidden');
+                viewReports.classList.remove('hidden');
+                if (headerBtn) {
+                    headerBtn.textContent = "Quick Bill";
+                    headerBtn.className = "px-3 py-1.5 text-xs font-bold bg-[#2ecc71] hover:bg-emerald-500 text-white rounded-md transition-all";
+                }
+                if (flowTitle) flowTitle.textContent = "Bill Report";
+                renderReportsLedger();
+            } else {
+                activeTab = "pos";
+                viewPOS.classList.remove('hidden');
+                viewReports.classList.add('hidden');
+                if (headerBtn) {
+                    headerBtn.textContent = "Bill Report";
+                    headerBtn.className = "px-3 py-1.5 text-xs font-bold bg-[#f39c12] hover:bg-orange-500 text-white rounded-md transition-all";
+                }
+                if (flowTitle) flowTitle.textContent = "Item Wise Bill";
+            }
+        }
+
+        // Toggle search overlay container visibility
+        function toggleSearchOverlay() {
+            const overlay = document.getElementById('search-overlay');
+            if (overlay) {
+                overlay.classList.toggle('hidden');
+                if (!overlay.classList.contains('hidden')) {
+                    document.getElementById('pos-search-input').focus();
+                }
+            }
+        }
+
+
+        // Render sliding category horizontal pills
+        function renderCategoryFilters() {
+            const container = document.getElementById('pos-category-filters');
+            if (!container) return;
+
+            let htmlString = `<button onclick="setCategoryFilter('ALL')" class="px-4 py-1.5 shrink-0 rounded-md text-xs font-black transition-all ${
+                activeCategoryFilter === "ALL" ? 'bg-[#f39c12] text-white' : 'bg-[#1e1e1e] hover:bg-neutral-800 text-neutral-300'
+            }">ALL</button>`;
+
             categories.forEach(cat => {
-                const isActive = activeCategory === cat.id;
-                slider.innerHTML += `
-                    <button onclick="setCategoryFilter('${cat.id}')" class="px-4 py-2 text-[11px] font-black tracking-wider rounded uppercase transition-all shrink-0 ${isActive ? 'bg-[#e67e22] text-white font-black' : 'bg-[#222222] text-neutral-300'}">
-                        ${cat.name}
-                    </button>
-                `;
+                const isActive = activeCategoryFilter === cat.id;
+                htmlString += `<button onclick="setCategoryFilter('${cat.id}')" class="px-4 py-1.5 shrink-0 rounded-md text-xs font-black transition-all ${
+                    isActive ? 'bg-[#f39c12] text-white' : 'bg-[#1e1e1e] hover:bg-neutral-800 text-neutral-300'
+                }">${cat.name}</button>`;
             });
+
+            container.innerHTML = htmlString;
         }
 
-        function setCategoryFilter(catId) {
-            activeCategory = catId;
-            renderPOSCategories();
-            filterPOSMenu();
+        // Change filter state
+        function setCategoryFilter(categoryId) {
+            activeCategoryFilter = categoryId;
+            renderCategoryFilters();
+            renderPOSCatalog();
         }
 
+        // Live input catalog filtering
         function filterPOSMenu() {
-            const searchQuery = document.getElementById('pos-search-input').value.toLowerCase().trim();
+            const input = document.getElementById('pos-search-input');
+            activeSearchQuery = input ? input.value.trim().toLowerCase() : "";
+            renderPOSCatalog();
+        }
+
+        // Render main grid of products
+        function renderPOSCatalog() {
             const grid = document.getElementById('pos-products-grid');
             const emptyState = document.getElementById('pos-empty-state');
             if (!grid) return;
-            grid.innerHTML = "";
 
-            const filtered = products.filter(p => {
-                const matchesCategory = activeCategory === "all" || p.categoryId === activeCategory;
-                const matchesSearch = p.name.toLowerCase().includes(searchQuery);
-                return matchesCategory && matchesSearch;
+            // Filter logic
+            const filtered = products.filter(prod => {
+                const matchesCat = (activeCategoryFilter === "ALL" || prod.category === activeCategoryFilter);
+                const matchesSearch = (activeSearchQuery === "" || prod.name.toLowerCase().includes(activeSearchQuery));
+                return matchesCat && matchesSearch;
             });
 
             if (filtered.length === 0) {
-                emptyState.classList.remove('hidden');
-                grid.classList.add('hidden');
+                grid.innerHTML = "";
+                if (emptyState) emptyState.classList.remove('hidden');
                 return;
             }
 
-            emptyState.classList.add('hidden');
-            grid.classList.remove('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
 
-            filtered.forEach(p => {
-                const btn = document.createElement('button');
-                btn.className = "bg-[#222222] hover:bg-[#2b2b2b] active:scale-95 border border-neutral-800 rounded p-2.5 flex flex-col justify-between items-center text-center transition-all h-[75px]";
-                btn.onclick = () => addToCart(p);
-                btn.innerHTML = `
-                    <span class="text-[11px] font-extrabold text-neutral-200 line-clamp-2 w-full uppercase leading-tight">${p.name}</span>
-                    <span class="text-xs font-black text-orange-400 mt-1">₹${p.price}</span>
+            // Draw product card elements matching photo specs
+            grid.innerHTML = filtered.map(prod => {
+                return `
+                    <div onclick="addItemsToPOSCart('${prod.id}')" class="bg-[#1e1e1e] border border-neutral-800 hover:border-orange-500 rounded-lg p-2.5 flex flex-col justify-between items-center text-center cursor-pointer transition-all active:scale-95 min-h-[90px] h-full">
+                        <div class="text-[11px] font-black tracking-tight text-white line-clamp-2 uppercase">${prod.name}</div>
+                        <div class="text-[12px] font-black text-[#f39c12] mt-1.5">₹${parseFloat(prod.price).toFixed(0)}</div>
+                    </div>
                 `;
-                grid.appendChild(btn);
-            });
+            }).join('');
         }
 
-        // Focus text inputs
-        function toggleSearchOverlay(forceOpen = false) {
-            const overlay = document.getElementById('search-overlay');
-            const input = document.getElementById('pos-search-input');
-            if (overlay.classList.contains('hidden') || forceOpen) {
-                overlay.classList.remove('hidden');
-                input.focus();
-                input.select();
-            } else {
-                overlay.classList.add('hidden');
-                input.value = "";
-                filterPOSMenu();
-            }
-        }
 
-        function toggleBarcodeFocus() {
-            toggleSearchOverlay(true);
-            const input = document.getElementById('pos-search-input');
-            input.placeholder = "Awaiting barcode barcode scan...";
-        }
+        // Render added cart products inside layout
+        function renderAddedCartRows() {
+            const listContainer = document.getElementById('cart-items-list');
+            const emptyState = document.getElementById('cart-empty-state');
+            const itemsCounter = document.getElementById('cart-item-count');
+            const payableTotalText = document.getElementById('cart-grand-total');
 
-        // ==================== CHECKOUT CART LOGIC ====================
-        function addToCart(product) {
-            const existing = cart.find(item => item.product.id === product.id);
-            if (existing) {
-                existing.quantity += 1;
-            } else {
-                cart.push({ product: product, quantity: 1 });
-            }
-            recalculateCart();
-        }
-
-        function updateCartQty(prodId, delta) {
-            const item = cart.find(item => item.product.id === prodId);
-            if (!item) return;
-            item.quantity += delta;
-            if (item.quantity <= 0) {
-                cart = cart.filter(item => item.product.id !== prodId);
-            }
-            recalculateCart();
-        }
-
-        function openCartItemEdit(idx) {
-            const item = cart[idx];
-            if (!item) return;
-            selectedCartItemIdx = idx;
-            document.getElementById('edit-cart-item-name').value = item.product.name;
-            document.getElementById('edit-cart-item-qty').value = item.quantity;
-            document.getElementById('edit-cart-item-price').value = item.product.price;
-            document.getElementById('cart-item-edit-modal').classList.remove('hidden');
-        }
-
-        function closeCartItemEditModal() {
-            document.getElementById('cart-item-edit-modal').classList.add('hidden');
-            selectedCartItemIdx = null;
-        }
-
-        function saveCartItemEdit() {
-            if (selectedCartItemIdx === null) return;
-            const newQty = parseInt(document.getElementById('edit-cart-item-qty').value) || 1;
-            const newPrice = parseFloat(document.getElementById('edit-cart-item-price').value) || 0;
-            
-            cart[selectedCartItemIdx].quantity = newQty;
-            cart[selectedCartItemIdx].product.price = newPrice;
-            
-            closeCartItemEditModal();
-            recalculateCart();
-        }
-
-        function clearCart() {
-            cart = [];
-            currentEditTicketId = null;
-            document.getElementById('app-flow-title').innerText = "Item Wise Bill";
-            recalculateCart();
-        }
-
-        function recalculateCart() {
-            let total = 0;
-            let qty = 0;
-            cart.forEach(item => {
-                total += item.product.price * item.quantity;
-                qty += item.quantity;
-            });
-            document.getElementById('cart-item-count').innerText = qty;
-            document.getElementById('cart-grand-total').innerText = `₹${total}`;
-            renderCart();
-        }
-
-        function renderCart() {
-            const container = document.getElementById('cart-items-list');
-            const empty = document.getElementById('cart-empty-state');
-            if (!container) return;
-            container.innerHTML = "";
+            if (!listContainer) return;
 
             if (cart.length === 0) {
-                container.appendChild(empty);
+                listContainer.innerHTML = '';
+                if (emptyState) emptyState.classList.remove('hidden');
+                if (itemsCounter) itemsCounter.textContent = '0';
+                if (payableTotalText) payableTotalText.textContent = '₹0';
                 return;
             }
 
-            cart.forEach((item, idx) => {
-                const subtotal = item.product.price * item.quantity;
-                const row = document.createElement('div');
-                row.className = "grid grid-cols-12 items-center text-[11px] font-bold py-1.5 px-3 bg-[#1e1e1e] border-b border-neutral-850 hover:bg-neutral-800 transition-colors";
-                row.innerHTML = `
-                    <div class="col-span-6 flex items-center min-w-0 pr-2">
-                        <span class="text-white font-extrabold truncate uppercase text-xs">${item.product.name}</span>
-                        <button onclick="openCartItemEdit(${idx})" class="ml-1.5 text-neutral-400 hover:text-orange-400" title="Modify item variables">
-                            <i class="fa-solid fa-pen text-[9px]"></i>
-                        </button>
-                    </div>
-                    <div class="col-span-2 flex items-center justify-center space-x-1">
-                        <button onclick="updateCartQty('${item.product.id}', -1)" class="w-5 h-5 rounded bg-neutral-800 text-white flex items-center justify-center font-bold text-xs">-</button>
-                        <span class="text-xs text-white font-black px-1">${item.quantity}</span>
-                        <button onclick="updateCartQty('${item.product.id}', 1)" class="w-5 h-5 rounded bg-neutral-800 text-white flex items-center justify-center font-bold text-xs">+</button>
-                    </div>
-                    <div class="col-span-2 text-right text-neutral-300">₹${item.product.price}</div>
-                    <div class="col-span-2 text-right text-orange-400 font-black">₹${subtotal}</div>
-                `;
-                container.appendChild(row);
-            });
-        }
+            if (emptyState) emptyState.classList.add('hidden');
 
-        // ==================== UNIVERSAL THERMAL PRINTER DRIVER ====================
-        function generatePrintHTML(receipt) {
-            let itemsHTML = "";
-            receipt.items.forEach(item => {
-                const name = item.product ? item.product.name : item.name;
-                const price = item.product ? item.product.price : item.price;
-                const sub = price * item.quantity;
-                itemsHTML += `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                        <span style="flex: 1; text-align: left; word-wrap: break-word; padding-right: 4px;">${name} x${item.quantity}</span>
-                        <span style="font-weight: bold;">₹${sub.toFixed(2)}</span>
+            let subtotal = 0;
+            let totalItemCount = 0;
+
+            listContainer.innerHTML = cart.map((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                totalItemCount += item.quantity;
+
+                return `
+                    <div class="bg-[#1a1a1a] border-b border-neutral-850 px-3 py-1.5 grid grid-cols-12 items-center text-xs text-white">
+                        <!-- Product Title + Pencil Edit Key -->
+                        <div class="col-span-6 font-bold truncate flex items-center space-x-1 uppercase">
+                            <span>${item.name}</span>
+                            <button onclick="openCartItemEdit(${index})" class="text-[#f39c12] hover:text-orange-400 p-0.5 ml-1" title="Adjust details">
+                                <i class="fa-solid fa-pencil text-[10px]"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Tactile Quantity Counters -->
+                        <div class="col-span-2 flex items-center justify-center space-x-1">
+                            <button onclick="adjustLineQty(${index}, -1)" class="w-8 h-8 rounded bg-[#333333] hover:bg-neutral-600 text-white font-extrabold flex items-center justify-center text-xs transition-all">-</button>
+                            <span class="font-bold text-center w-4 text-xs">${item.quantity}</span>
+                            <button onclick="adjustLineQty(${index}, 1)" class="w-8 h-8 rounded bg-[#333333] hover:bg-neutral-600 text-white font-extrabold flex items-center justify-center text-xs transition-all">+</button>
+                        </div>
+
+                        <!-- Unit Rate -->
+                        <div class="col-span-2 text-right font-semibold text-neutral-400">₹${parseFloat(item.price).toFixed(0)}</div>
+
+                        <!-- Line Item Total -->
+                        <div class="col-span-2 text-right font-bold text-[#f39c12]">₹${parseFloat(itemTotal).toFixed(0)}</div>
                     </div>
                 `;
-            });
+            }).join('');
 
-            return `
-                <div style="
-                    box-sizing: border-box; 
-                    font-family: 'Courier Prime', 'Courier', monospace; 
-                    font-size: ${templateConfig.fontSize}; 
-                    line-height: ${templateConfig.lineHeight}; 
-                    color: #000; 
-                    background-color: #fff;
-                    padding: 4px;
-                    width: 100%;
-                    max-width: 100%;
-                ">
-                    <div style="text-align: center; font-weight: bold; font-size: 13px; text-transform: uppercase;">${templateConfig.shopName}</div>
-                    <div style="text-align: center; font-style: italic; font-size: 10px; margin-bottom: 4px;">${templateConfig.tagline}</div>
-                    <div style="text-align: center; font-size: 9px; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 4px;">
-                        ${templateConfig.address}<br>
-                        Tel: ${templateConfig.phone}
-                    </div>
-
-                    <div style="font-size: 9px; margin-bottom: 4px;">
-                        <div>Ticket: ${receipt.id}</div>
-                        <div>Date: ${receipt.date}</div>
-                    </div>
-
-                    <div style="border-bottom: 1px dashed #000; margin-bottom: 4px;"></div>
-                    <div style="font-size: 10px; margin-bottom: 4px;">
-                        ${itemsHTML}
-                    </div>
-                    <div style="border-bottom: 1px dashed #000; margin-bottom: 4px;"></div>
-
-                    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; margin-bottom: 6px;">
-                        <span>TOTAL PAYABLE:</span>
-                        <span>₹${receipt.grandTotal.toFixed(2)}</span>
-                    </div>
-
-                    <div style="border-bottom: 1px dashed #000; margin-bottom: 4px;"></div>
-                    <div style="text-align: center; font-size: 9px; font-style: italic;">
-                        ${templateConfig.footerMessage}
-                    </div>
-                </div>
-            `;
+            if (itemsCounter) itemsCounter.textContent = totalItemCount;
+            if (payableTotalText) payableTotalText.textContent = '₹' + subtotal.toFixed(0);
         }
 
-        function generateESCPlaintext(receipt) {
-            const width = 32; // Standard 58mm characters count
-            const divider = "-".repeat(width);
-            let lines = [];
-            
-            lines.push(centerAlign(templateConfig.shopName, width));
-            lines.push(centerAlign(templateConfig.tagline, width));
-            lines.push(centerAlign(templateConfig.address, width));
-            lines.push(centerAlign(`Tel: ${templateConfig.phone}`, width));
-            lines.push(divider);
-            
-            lines.push(`Ticket: ${receipt.id}`);
-            lines.push(`Date: ${receipt.date}`);
-            lines.push(divider);
-            
-            receipt.items.forEach(item => {
-                const title = item.product ? item.product.name : item.name;
-                const price = item.product ? item.product.price : item.price;
-                const qtyText = `x${item.quantity}`;
-                const totText = `INR ${(price * item.quantity).toFixed(0)}`;
-                const desc = `${title} ${qtyText}`;
-                
-                if (desc.length + totText.length + 1 <= width) {
-                    const sp = width - (desc.length + totText.length);
-                    lines.push(desc + " ".repeat(sp) + totText);
-                } else {
-                    lines.push(title);
-                    const sp = width - (qtyText.length + totText.length);
-                    lines.push(qtyText + " ".repeat(sp) + totText);
-                }
-            });
-            lines.push(divider);
-            
-            const totLabel = "TOTAL:";
-            const totVal = `INR ${receipt.grandTotal.toFixed(2)}`;
-            const spVal = width - (totLabel.length + totVal.length);
-            lines.push(totLabel + " ".repeat(spVal > 0 ? spVal : 1) + totVal);
-            lines.push(divider);
-            
-            lines.push(centerAlign(templateConfig.footerMessage, width));
-            lines.push("\n\n");
-            return lines.join("\n");
-        }
+        // Add item to active cart array
+        function addItemsToPOSCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
 
-        function centerAlign(text, width) {
-            if (text.length >= width) return text.substring(0, width);
-            const sp = Math.floor((width - text.length) / 2);
-            return " ".repeat(sp) + text;
-        }
-
-        function copyPlaintextClipboard(text) {
-            const el = document.createElement('textarea');
-            el.value = text;
-            el.setAttribute('readonly', '');
-            el.style.position = 'absolute';
-            el.style.left = '-9999px';
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-        }
-
-        function triggerThermalSlipPrint(receipt) {
-            // Android clipboard integration support fallback
-            const escText = generateESCPlaintext(receipt);
-            copyPlaintextClipboard(escText);
-
-            // Native Windows PC/Mac framework printing
-            const printIframe = document.getElementById('print-iframe');
-            if (!printIframe) return;
-            const doc = printIframe.contentDocument || printIframe.contentWindow.document;
-            const html = generatePrintHTML(receipt);
-
-            doc.open();
-            doc.write(`
-                <html>
-                <head>
-                    <title>Print Slip</title>
-                    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
-                    <style>
-                        @page { margin: 0; size: auto; }
-                        html, body { 
-                            margin: 0; 
-                            padding: 0; 
-                            background-color: #fff; 
-                            width: 215px; 
-                        }
-                    </style>
-                </head>
-                <body onload="setTimeout(function(){ window.print(); }, 150);">
-                    ${html}
-                </body>
-                </html>
-            `);
-            doc.close();
-        }
-
-        // ==================== CHECKOUT DISPATCH HANDLERS ====================
-        function processCheckout(withPrint = false) {
-            if (cart.length === 0) {
-                showAlert("Checkout Empty", "Add menu products to your checkout cart.", false);
-                return;
-            }
-
-            const ticketId = currentEditTicketId || ("TX-" + Math.floor(100000 + Math.random() * 900000));
-            const total = cart.reduce((acc, curr) => acc + (curr.product.price * curr.quantity), 0);
-
-            const txRecord = {
-                id: ticketId,
-                timestamp: new Date().toISOString(),
-                items: cart.map(item => ({
-                    id: item.product.id,
-                    name: item.product.name,
-                    price: item.product.price,
-                    quantity: item.quantity
-                })),
-                grandTotal: total
-            };
-
-            if (withPrint) {
-                pendingTxRecord = txRecord;
-                const receiptObj = {
-                    id: ticketId,
-                    date: new Date().toLocaleString(),
-                    items: cart,
-                    grandTotal: total
-                };
-                triggerThermalSlipPrint(receiptObj);
-                document.getElementById('print-verify-modal').classList.remove('hidden');
+            const existingIndex = cart.findIndex(item => item.id === productId);
+            if (existingIndex > -1) {
+                cart[existingIndex].quantity += 1;
             } else {
-                saveTransactionToDatabase(txRecord);
-                clearCart();
-                showAlert("Success", `Ticket ${txRecord.id} saved in ledger log.`);
-            }
-        }
-
-        function saveTransactionToDatabase(txRecord) {
-            if (currentEditTicketId) {
-                const idx = transactions.findIndex(t => t.id === currentEditTicketId);
-                if (idx !== -1) {
-                    transactions[idx] = txRecord;
-                } else {
-                    transactions.push(txRecord);
-                }
-            } else {
-                transactions.push(txRecord);
-            }
-            safeSetItem("chill_out_transactions", transactions);
-            currentEditTicketId = null;
-            document.getElementById('app-flow-title').innerText = "Item Wise Bill";
-            refreshAllUI();
-        }
-
-        function closePrintVerify(success) {
-            document.getElementById('print-verify-modal').classList.add('hidden');
-            if (success && pendingTxRecord) {
-                saveTransactionToDatabase(pendingTxRecord);
-                clearCart();
-                showAlert("Success", "Billing transaction locked.");
-            } else {
-                showAlert("Action Aborted", "Active order retained inside active layout draft.", false);
-            }
-            pendingTxRecord = null;
-        }
-
-        // ==================== REPORTS SYSTEM LEDGER ====================
-        function renderReportsLedger() {
-            const tbody = document.getElementById('reports-ledger-tbody');
-            const empty = document.getElementById('reports-empty-state');
-            if (!tbody) return;
-            tbody.innerHTML = "";
-
-            if (transactions.length === 0) {
-                if (empty) empty.classList.remove('hidden');
-                tbody.closest('table').classList.add('hidden');
-                
-                document.getElementById('report-daily-revenue').innerText = "₹0";
-                document.getElementById('report-daily-count').innerText = "0 tickets";
-                document.getElementById('report-weekly-revenue').innerText = "₹0";
-                document.getElementById('report-weekly-count').innerText = "0 tickets";
-                document.getElementById('report-monthly-revenue').innerText = "₹0";
-                document.getElementById('report-monthly-count').innerText = "0 tickets";
-                return;
-            }
-
-            if (empty) empty.classList.add('hidden');
-            tbody.closest('table').classList.remove('hidden');
-
-            const now = new Date();
-            const oneDay = 24 * 60 * 60 * 1000;
-
-            let dailyVal = 0, dailyC = 0;
-            let weeklyVal = 0, weeklyC = 0;
-            let monthlyVal = 0, monthlyC = 0;
-
-            transactions.forEach(tx => {
-                const txDate = new Date(tx.timestamp);
-                const diff = Math.ceil(Math.abs(now - txDate) / oneDay);
-
-                if (txDate.toDateString() === now.toDateString()) {
-                    dailyVal += tx.grandTotal;
-                    dailyC++;
-                }
-                if (diff <= 7) {
-                    weeklyVal += tx.grandTotal;
-                    weeklyC++;
-                }
-                if (diff <= 30) {
-                    monthlyVal += tx.grandTotal;
-                    monthlyC++;
-                }
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-neutral-800 text-[11px] border-b border-neutral-850 transition-colors";
-                
-                let summary = tx.items.map(i => `${i.name} (x${i.quantity})`).join(', ');
-                if (summary.length > 45) summary = summary.substring(0, 42) + "...";
-
-                tr.innerHTML = `
-                    <td class="px-3 py-2 font-black text-white">${tx.id}</td>
-                    <td class="px-3 py-2 text-neutral-400 font-medium">${new Date(tx.timestamp).toLocaleString()}</td>
-                    <td class="px-3 py-2 text-neutral-300 truncate max-w-[200px]" title="${tx.items.map(i => `${i.name} x${i.quantity}`).join(', ')}">${summary}</td>
-                    <td class="px-3 py-2 text-right font-black text-orange-400">₹${tx.grandTotal}</td>
-                    <td class="px-3 py-2 text-center space-x-1 flex items-center justify-center">
-                        <button onclick="editTransaction('${tx.id}')" class="bg-[#d35400] text-white hover:bg-orange-700 font-bold px-2 py-1 rounded text-[10px] uppercase">
-                            Edit
-                        </button>
-                        <button onclick="reprintTransaction('${tx.id}')" class="bg-neutral-800 hover:bg-neutral-750 text-neutral-300 font-bold px-2 py-1 rounded text-[10px] uppercase">
-                            Print
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            document.getElementById('report-daily-revenue').innerText = `₹${dailyVal}`;
-            document.getElementById('report-daily-count').innerText = `${dailyC} Ticket${dailyC !== 1 ? 's' : ''}`;
-            document.getElementById('report-weekly-revenue').innerText = `₹${weeklyVal}`;
-            document.getElementById('report-weekly-count').innerText = `${weeklyC} Ticket${weeklyC !== 1 ? 's' : ''}`;
-            document.getElementById('report-monthly-revenue').innerText = `₹${monthlyVal}`;
-            document.getElementById('report-monthly-count').innerText = `${monthlyC} Ticket${monthlyC !== 1 ? 's' : ''}`;
-        }
-
-        function editTransaction(ticketId) {
-            const tx = transactions.find(t => t.id === ticketId);
-            if (!tx) return;
-
-            currentEditTicketId = tx.id;
-            cart = [];
-
-            tx.items.forEach(item => {
-                let catalogProd = products.find(p => p.id === item.id);
-                if (!catalogProd) {
-                    catalogProd = {
-                        id: item.id,
-                        name: item.name,
-                        price: item.price,
-                        categoryId: "cat-bev"
-                    };
-                }
                 cart.push({
-                    product: catalogProd,
-                    quantity: item.quantity
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1
                 });
-            });
-
-            recalculateCart();
-            switchTab('pos');
-            showAlert("Modification Mode Activated", `Ticket ${ticketId} loaded into billing workflow.`);
-        }
-
-        function reprintTransaction(ticketId) {
-            const tx = transactions.find(t => t.id === ticketId);
-            if (!tx) return;
-
-            const rec = {
-                id: tx.id,
-                date: new Date(tx.timestamp).toLocaleString(),
-                items: tx.items,
-                grandTotal: tx.grandTotal
-            };
-            triggerThermalSlipPrint(rec);
-            showAlert("Slip Dispatched", "Receipt dispatch initiated. Plaintext payload cached to mobile clipboard.");
-        }
-
-        function filterReportsTable() {
-            const query = document.getElementById('report-query-search').value.toLowerCase().trim();
-            const rows = document.querySelectorAll('#reports-ledger-tbody tr');
-            rows.forEach(row => {
-                const txt = row.innerText.toLowerCase();
-                row.style.display = txt.includes(query) ? "" : "none";
-            });
-        }
-
-        async function wipeLedgerRecordsPrompt() {
-            const confirm = await showConfirm("Permanently wipe all billing data and transactions logs?");
-            if (!confirm) return;
-
-            transactions = [];
-            safeSetItem("chill_out_transactions", []);
-            refreshAllUI();
-            showAlert("Ledger Cleared", "System transaction ledger logs erased.");
-        }
-
-        function exportToExcel() {
-            if (transactions.length === 0) {
-                showAlert("Ledger empty", "Export operations require checkout data logs.", false);
-                return;
             }
 
-            const excelRows = [];
-            transactions.forEach(tx => {
-                tx.items.forEach(i => {
-                    excelRows.push({
-                        "Ticket ID": tx.id,
-                        "Checkout Timestamp": new Date(tx.timestamp).toLocaleString(),
-                        "Product Title": i.name,
-                        "Unit Value (INR)": i.price,
-                        "Quantity Ordered": i.quantity,
-                        "Line Total (INR)": i.price * i.quantity,
-                        "Transaction Sum Total (INR)": tx.grandTotal
-                    });
-                });
-            });
-
-            const sheet = XLSX.utils.json_to_sheet(excelRows);
-            const book = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(book, sheet, "POS Operations Ledger");
-
-            sheet['!cols'] = [
-                { wch: 15 },
-                { wch: 22 },
-                { wch: 25 },
-                { wch: 16 },
-                { wch: 12 },
-                { wch: 16 },
-                { wch: 18 }
-            ];
-
-            XLSX.writeFile(book, `Chill_Out_Cafe_Operations_${new Date().toISOString().split('T')[0]}.xlsx`);
-            showAlert("Export Generated", "Structured operations spreadsheets downloaded.");
+            renderAddedCartRows();
         }
 
-        // ==================== MANUAL MENU MANAGER ====================
-        function openAddProductModal() {
-            document.getElementById('product-modal-title').innerText = "Add Menu Product";
-            document.getElementById('edit-prod-id').value = "";
-            document.getElementById('form-prod-name').value = "";
-            document.getElementById('form-prod-price').value = "";
-            
-            const select = document.getElementById('form-prod-category');
-            select.innerHTML = "";
-            categories.forEach(cat => {
-                select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
-            });
+        // Adjust line item quantity directly from plus/minus keys
+        function adjustLineQty(index, offset) {
+            if (index < 0 || index >= cart.length) return;
+            cart[index].quantity += offset;
 
+            if (cart[index].quantity <= 0) {
+                cart.splice(index, 1);
+            }
+            renderAddedCartRows();
+        }
+
+        // Clear active cart action
+        function clearCart() {
+            if (cart.length === 0) return;
+            showCustomConfirm("Clear all items currently added to your billing layout?", (yes) => {
+                if (yes) {
+                    cart = [];
+                    currentEditingOrderIndex = null;
+                    renderAddedCartRows();
+                }
+            });
+        }
+
+        // Manual open "Add Product" configuration form modal
+        function openAddProductModal() {
+            document.getElementById('edit-prod-id').value = '';
+            document.getElementById('form-prod-name').value = '';
+            document.getElementById('form-prod-price').value = '';
+            document.getElementById('product-modal-title').textContent = "Add Product Form";
             document.getElementById('product-modal').classList.remove('hidden');
         }
 
@@ -1332,43 +893,445 @@
             document.getElementById('product-modal').classList.add('hidden');
         }
 
+        // Save new menu item to memory state
         function handleProductFormSubmit(e) {
             e.preventDefault();
-            const id = document.getElementById('edit-prod-id').value;
-            const name = document.getElementById('form-prod-name').value.trim();
-            const categoryId = document.getElementById('form-prod-category').value;
-            const price = parseFloat(document.getElementById('form-prod-price').value) || 0;
+            const prodName = document.getElementById('form-prod-name').value.trim();
+            const prodPrice = parseFloat(document.getElementById('form-prod-price').value);
+            const prodCat = document.getElementById('form-prod-category').value;
 
-            if (!name || !categoryId || price < 0) return;
+            if (!prodName || isNaN(prodPrice)) return;
 
-            if (id) {
-                const prod = products.find(p => p.id === id);
-                if (prod) {
-                    prod.name = name;
-                    prod.categoryId = categoryId;
-                    prod.price = price;
-                }
-            } else {
-                const newProd = {
-                    id: "prod-" + Math.floor(100000 + Math.random() * 900000),
-                    name: name,
-                    categoryId: categoryId,
-                    price: price
-                };
-                products.push(newProd);
-            }
+            const newProd = {
+                id: 'custom-' + Date.now(),
+                name: prodName.toUpperCase(),
+                category: prodCat,
+                price: prodPrice
+            };
 
-            safeSetItem("chill_out_products", products);
+            products.push(newProd);
+            safeSetItem("chill_products", products);
+            renderPOSCatalog();
             closeProductModal();
-            refreshAllUI();
-            showAlert("Success", `Menu item "${name}" successfully compiled.`);
+            showCustomAlert("Product Added", `${prodName.toUpperCase()} is now listed under category defaults.`);
         }
 
-        // Initialize execution on runtime
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            initApp();
-        } else {
-            document.addEventListener('DOMContentLoaded', initApp);
+        // Focus search overlay text field
+        function toggleBarcodeFocus() {
+            toggleSearchOverlay();
+        }
+
+        // Inline modal edit logic for Cart Rows (pencil icon triggers this)
+        let activeEditCartIndex = null;
+        function openCartItemEdit(index) {
+            if (index < 0 || index >= cart.length) return;
+            activeEditCartIndex = index;
+            const item = cart[index];
+
+            document.getElementById('edit-cart-item-name').value = item.name;
+            document.getElementById('edit-cart-item-qty').value = item.quantity;
+            document.getElementById('edit-cart-item-price').value = item.price;
+
+            document.getElementById('cart-item-edit-modal').classList.remove('hidden');
+        }
+
+        function closeCartItemEditModal() {
+            document.getElementById('cart-item-edit-modal').classList.add('hidden');
+            activeEditCartIndex = null;
+        }
+
+        function saveCartItemEdit() {
+            if (activeEditCartIndex === null) return;
+            const qty = parseInt(document.getElementById('edit-cart-item-qty').value);
+            const price = parseFloat(document.getElementById('edit-cart-item-price').value);
+
+            if (isNaN(qty) || qty <= 0 || isNaN(price) || price < 0) {
+                showCustomAlert("Validation Error", "Please insert valid rates and quantity numbers.");
+                return;
+            }
+
+            cart[activeEditCartIndex].quantity = qty;
+            cart[activeEditCartIndex].price = price;
+
+            renderAddedCartRows();
+            closeCartItemEditModal();
+        }
+
+
+        // Perform final checkouts (Saves records, triggers thermal printing window, clears layout)
+        function processCheckout(withPrint = false) {
+            if (cart.length === 0) {
+                showCustomAlert("Empty Cart", "Please add menu items to the cart before checking out.");
+                return;
+            }
+
+            let subtotal = 0;
+            cart.forEach(item => { subtotal += item.price * item.quantity; });
+
+            const timestamp = new Date();
+            const formattedTime = timestamp.toLocaleString('en-US', { 
+                hour12: true, 
+                year: 'numeric', month: 'short', day: 'numeric', 
+                hour: '2-digit', minute: '2-digit' 
+            });
+
+            const transactionRecord = {
+                id: currentEditingOrderIndex !== null ? currentEditingOrderIndex : 'TX-' + Date.now().toString().slice(-6),
+                time: formattedTime,
+                rawTimestamp: timestamp.getTime(),
+                items: JSON.parse(JSON.stringify(cart)),
+                total: subtotal
+            };
+
+            if (withPrint) {
+                // Compile and stream thermal layout printing
+                triggerThermalPrint(transactionRecord);
+
+                // Verification dialogue ensures the user doesn't lose draft if print fails
+                showPrintVerifyConfirm((success) => {
+                    if (success) {
+                        commitTransactionToLogs(transactionRecord);
+                        cart = [];
+                        currentEditingOrderIndex = null;
+                        renderAddedCartRows();
+                    }
+                });
+            } else {
+                commitTransactionToLogs(transactionRecord);
+                cart = [];
+                currentEditingOrderIndex = null;
+                renderAddedCartRows();
+                showCustomAlert("Order Saved", `Checkout ticket logged successfully.`);
+            }
+        }
+
+        // Commit transaction to state & cache
+        function commitTransactionToLogs(record) {
+            const existingIdx = transactions.findIndex(t => t.id === record.id);
+            if (existingIdx > -1) {
+                transactions[existingIdx] = record;
+            } else {
+                transactions.unshift(record);
+            }
+            safeSetItem("chill_transactions", transactions);
+            renderReportsLedger();
+        }
+
+        // Edit past order (re-inject past items back into POS grid)
+        function editPastOrder(txId) {
+            const tx = transactions.find(t => t.id === txId);
+            if (!tx) return;
+
+            showCustomConfirm(`Reload checkout ticket ${txId} back into checkout cart?`, (proceed) => {
+                if (proceed) {
+                    cart = JSON.parse(JSON.stringify(tx.items));
+                    currentEditingOrderIndex = tx.id; // Store existing ID to update it upon save/print
+                    renderAddedCartRows();
+                    
+                    // Switch tab view back to POS billing grid
+                    if (activeTab === "reports") {
+                        toggleMainTabs();
+                    }
+                    showCustomAlert("Order Loaded", `Ticket ${txId} is active for editing.`);
+                }
+            });
+        }
+
+        // Compile clean ESC/POS plain text thermal receipt for copy/bridging
+        function triggerThermalPrint(record) {
+            const iframe = document.getElementById('thermal-print-iframe');
+            if (!iframe) return;
+
+            let itemsHtml = record.items.map(item => `
+                <tr style="border-bottom: 1px dashed #000; font-size: 13px;">
+                    <td style="padding: 4px 0; text-transform: uppercase;">${item.name}</td>
+                    <td style="padding: 4px 0; text-align: center;">${item.quantity}</td>
+                    <td style="padding: 4px 0; text-align: right;">₹${parseFloat(item.price).toFixed(0)}</td>
+                    <td style="padding: 4px 0; text-align: right;">₹${parseFloat(item.price * item.quantity).toFixed(0)}</td>
+                </tr>
+            `).join('');
+
+            const receiptHTML = `
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: 'Courier New', Courier, monospace;
+                            color: #000000;
+                            margin: 0;
+                            padding: 10px;
+                            width: 280px; /* Target 58mm / 80mm generic roll size */
+                        }
+                        .text-center { text-align: center; }
+                        .text-right { text-align: right; }
+                        .header { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
+                        .line { border-bottom: 1px dashed #000; margin: 8px 0; }
+                    </style>
+                </head>
+                <body>
+                    <div class="text-center">
+                        <div class="header">CHILL OUT CAFE</div>
+                        <div style="font-size: 11px;">RESTAURANT & REFRESHMENTS</div>
+                        <div style="font-size: 11px;">Receipt ID: ${record.id}</div>
+                        <div style="font-size: 10px; margin-bottom: 4px;">${record.time}</div>
+                    </div>
+                    <div class="line"></div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px dashed #000; font-size: 12px; font-weight: bold;">
+                                <th style="text-align: left; padding-bottom: 4px;">ITEM</th>
+                                <th style="text-align: center; padding-bottom: 4px;">QTY</th>
+                                <th style="text-align: right; padding-bottom: 4px;">RATE</th>
+                                <th style="text-align: right; padding-bottom: 4px;">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                        </tbody>
+                    </table>
+                    <div class="line"></div>
+                    <div class="text-right" style="font-weight: bold; font-size: 14px; padding-top: 4px;">
+                        PAYABLE: ₹${parseFloat(record.total).toFixed(0)}
+                    </div>
+                    <div class="line"></div>
+                    <div class="text-center" style="font-size: 11px; margin-top: 10px; font-weight: bold;">
+                        THANK YOU FOR YOUR VISIT!
+                    </div>
+                </body>
+                </html>
+            `;
+
+            // Inject and trigger direct browser printing
+            const doc = iframe.contentWindow.document;
+            doc.open();
+            doc.write(receiptHTML);
+            doc.close();
+
+            // Tiny delay to ensure styles render before print triggers
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            }, 300);
+
+            // Plain text copy buffer to clipboard for Android companion apps (RawBT / Bluetooth print services)
+            let txtBuffer = `CHILL OUT CAFE & RESTAURANT\n`;
+            txtBuffer += `Receipt ID: ${record.id}\n`;
+            txtBuffer += `Time: ${record.time}\n`;
+            txtBuffer += `--------------------------------\n`;
+            txtBuffer += `ITEM            QTY   RATE   TOTAL\n`;
+            txtBuffer += `--------------------------------\n`;
+            record.items.forEach(item => {
+                const nameStr = item.name.slice(0, 14).padEnd(15, ' ');
+                const qtyStr = item.quantity.toString().padStart(3, ' ');
+                const rateStr = item.price.toFixed(0).padStart(6, ' ');
+                const totStr = (item.price * item.quantity).toFixed(0).padStart(7, ' ');
+                txtBuffer += `${nameStr}${qtyStr}${rateStr}${totStr}\n`;
+            });
+            txtBuffer += `--------------------------------\n`;
+            txtBuffer += `PAYABLE TOTAL: ₹${parseFloat(record.total).toFixed(0)}\n`;
+            txtBuffer += `--------------------------------\n`;
+            txtBuffer += `Thank you! Come again!\n`;
+
+            // Fast zero-dependency copy implementation supporting security sandboxes
+            const textElement = document.createElement('textarea');
+            textElement.value = txtBuffer;
+            document.body.appendChild(textElement);
+            textElement.select();
+            document.execCommand('copy');
+            document.body.removeChild(textElement);
+            console.log("ESC/POS raw content copied to clipboard for companion Bluetooth Print applications.");
+        }
+
+
+        // Compile reports KPIs (Daily, Weekly, Monthly metrics)
+        function renderReportsLedger() {
+            const tbody = document.getElementById('reports-ledger-tbody');
+            const emptyState = document.getElementById('reports-empty-state');
+            const query = document.getElementById('report-query-search').value.trim().toLowerCase();
+
+            const dailyRevenueText = document.getElementById('report-daily-revenue');
+            const dailyCountText = document.getElementById('report-daily-count');
+            const weeklyRevenueText = document.getElementById('report-weekly-revenue');
+            const weeklyCountText = document.getElementById('report-weekly-count');
+            const monthlyRevenueText = document.getElementById('report-monthly-revenue');
+            const monthlyCountText = document.getElementById('report-monthly-count');
+
+            // Set times
+            const now = Date.now();
+            const oneDay = 24 * 60 * 60 * 1000;
+
+            let dailyRev = 0, dailyCount = 0;
+            let weeklyRev = 0, weeklyCount = 0;
+            let monthlyRev = 0, monthlyCount = 0;
+
+            transactions.forEach(tx => {
+                const delta = now - tx.rawTimestamp;
+                if (delta <= oneDay) {
+                    dailyRev += tx.total;
+                    dailyCount++;
+                }
+                if (delta <= oneDay * 7) {
+                    weeklyRev += tx.total;
+                    weeklyCount++;
+                }
+                if (delta <= oneDay * 30) {
+                    monthlyRev += tx.total;
+                    monthlyCount++;
+                }
+            });
+
+            // Update KPI text nodes
+            if (dailyRevenueText) dailyRevenueText.textContent = `₹${dailyRev.toFixed(2)}`;
+            if (dailyCountText) dailyCountText.textContent = `${dailyCount} transactions saved`;
+            if (weeklyRevenueText) weeklyRevenueText.textContent = `₹${weeklyRev.toFixed(2)}`;
+            if (weeklyCountText) weeklyCountText.textContent = `${weeklyCount} transactions saved`;
+            if (monthlyRevenueText) monthlyRevenueText.textContent = `₹${monthlyRev.toFixed(2)}`;
+            if (monthlyCountText) monthlyCountText.textContent = `${monthlyCount} transactions saved`;
+
+            // Filter Table entries
+            const filteredTxs = transactions.filter(t => query === "" || t.id.toLowerCase().includes(query));
+
+            if (!tbody) return;
+
+            if (filteredTxs.length === 0) {
+                tbody.innerHTML = "";
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+
+            if (emptyState) emptyState.classList.add('hidden');
+
+            tbody.innerHTML = filteredTxs.map(tx => {
+                const summary = tx.items.map(item => `${item.name} (${item.quantity})`).join(', ');
+                return `
+                    <tr class="hover:bg-neutral-800 transition-all">
+                        <td class="px-3 py-3.5 font-bold text-white uppercase">${tx.id}</td>
+                        <td class="px-3 py-3.5 text-neutral-400 font-mono">${tx.time}</td>
+                        <td class="px-3 py-3.5 text-neutral-300 truncate max-w-xs uppercase font-medium" title="${summary}">${summary}</td>
+                        <td class="px-3 py-3.5 text-right font-black text-[#f39c12]">₹${parseFloat(tx.total).toFixed(2)}</td>
+                        <td class="px-3 py-3.5 text-center flex justify-center space-x-1.5">
+                            <button onclick="editPastOrder('${tx.id}')" class="px-2.5 py-1 rounded bg-orange-500/20 text-orange-400 hover:bg-orange-500 hover:text-white transition-all text-[11px] font-bold">
+                                Edit
+                            </button>
+                            <button onclick="deletePastOrderRecord('${tx.id}')" class="px-2.5 py-1 rounded bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white transition-all text-[11px] font-bold">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Live input tables search
+        function filterReportsTable() {
+            renderReportsLedger();
+        }
+
+        // Wipe transaction record completely
+        function deletePastOrderRecord(txId) {
+            showCustomConfirm(`Permanently delete transaction record ${txId}? This cannot be undone.`, (proceed) => {
+                if (proceed) {
+                    transactions = transactions.filter(t => t.id !== txId);
+                    safeSetItem("chill_transactions", transactions);
+                    renderReportsLedger();
+                    showCustomAlert("Record Deleted", "Historical log deleted successfully.");
+                }
+            });
+        }
+
+        // Reset all transaction logs
+        function wipeLedgerRecordsPrompt() {
+            showCustomConfirm("Clear ALL past transactions and reset the ledger dashboard?", (proceed) => {
+                if (proceed) {
+                    transactions = [];
+                    safeSetItem("chill_transactions", transactions);
+                    renderReportsLedger();
+                    showCustomAlert("Ledger Wiped", "All historical receipts have been removed.");
+                }
+            });
+        }
+
+        // Export system transaction files to Excel using SheetJS
+        function exportToExcel() {
+            if (transactions.length === 0) {
+                showCustomAlert("Export Blocked", "There are currently no transactions logged to export.");
+                return;
+            }
+
+            const header = ["Ticket ID", "Timestamp", "Items Summary", "Grand Total (INR)"];
+            const rows = transactions.map(t => [
+                t.id,
+                t.time,
+                t.items.map(i => `${i.name} (Qty:${i.quantity}, Rate:₹${i.price})`).join(' | '),
+                t.total
+            ]);
+
+            // Construct worksheet
+            const wsData = [header, ...rows];
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+            // Append sheet
+            XLSX.utils.book_append_sheet(wb, ws, "Sales Ledger");
+
+            // Build output
+            XLSX.writeFile(wb, `Chill_Out_Cafe_Sales_${new Date().toISOString().slice(0, 10)}.xlsx`);
+        }
+
+        // Switch custom dark theme
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-toggle-icon');
+
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.style.backgroundColor = '#f7f7f7';
+                html.style.color = '#121212';
+                if (icon) icon.className = "fa-solid fa-sun text-orange-400";
+            } else {
+                html.classList.add('dark');
+                html.style.backgroundColor = '#121212';
+                html.style.color = '#ffffff';
+                if (icon) icon.className = "fa-solid fa-moon text-neutral-400";
+            }
+        }
+
+        /* SCREEN POPUPS OVERLAY SYSTEMS (Resolves alert/confirm mandate) */
+        function showCustomAlert(title, message) {
+            document.getElementById('alert-title').textContent = title;
+            document.getElementById('alert-message').textContent = message;
+            document.getElementById('alert-modal').classList.remove('hidden');
+        }
+
+        function closeAlert() {
+            document.getElementById('alert-modal').classList.add('hidden');
+        }
+
+        function showCustomConfirm(message, callback) {
+            activeConfirmCallback = callback;
+            document.getElementById('confirm-message').textContent = message;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeConfirm(proceed) {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            if (activeConfirmCallback) {
+                activeConfirmCallback(proceed);
+                activeConfirmCallback = null;
+            }
+        }
+
+        function showPrintVerifyConfirm(callback) {
+            activePrintVerifyCallback = callback;
+            document.getElementById('print-verify-modal').classList.remove('hidden');
+        }
+
+        function closePrintVerify(success) {
+            document.getElementById('print-verify-modal').classList.add('hidden');
+            if (activePrintVerifyCallback) {
+                activePrintVerifyCallback(success);
+                activePrintVerifyCallback = null;
+            }
         }
     </script>
 </body>
